@@ -12,9 +12,11 @@ import HowToUse from './pages/HowToUse';
 import MyBookings from './pages/MyBookings';
 import Profile from './pages/Profile';
 import Stations from './pages/Stations';
+import Wallet from './pages/Wallet';
 import Overview from './pages/admin/Overview';
 import Users from './pages/admin/Users';
 import Vehicles from './pages/admin/Vehicles';
+import AdminStations from './pages/admin/AdminStations';
 
 function App() {
   return (
@@ -36,6 +38,7 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="my-bookings" element={<MyBookings />} />
           <Route path="stations" element={<Stations />} />
+          <Route path="wallet" element={<Wallet />} />
         </Route>
 
         {/* Admin Routes */}
@@ -43,6 +46,7 @@ function App() {
           <Route index element={<Overview />} />
           <Route path="users" element={<Users />} />
           <Route path="vehicles" element={<Vehicles />} />
+          <Route path="stations" element={<AdminStations />} />
         </Route>
       </Routes>
     </BrowserRouter>

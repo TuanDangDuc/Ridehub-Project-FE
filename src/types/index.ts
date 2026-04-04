@@ -63,6 +63,7 @@ export interface Station {
   city: string;
   vehicleCapacity: number;
   currentVehicleCount: number;
+  status?: 'ACTIVE' | 'INACTIVE';
 }
 
 export interface DashboardStats {

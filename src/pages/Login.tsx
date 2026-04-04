@@ -34,7 +34,7 @@ const Login: React.FC = () => {
         } else if (matchedUser.status === 'BANNED' || matchedUser.status === 'LOCKED') {
            setError('Tài khoản bị cấm!');
         } else {
-           localStorage.setItem('user', JSON.stringify({ name: matchedUser.firstName + ' ' + matchedUser.lastName, role: matchedUser.role, email: matchedUser.email }));
+           localStorage.setItem('user', JSON.stringify({ id: matchedUser.id, name: matchedUser.firstName + ' ' + matchedUser.lastName, role: matchedUser.role, email: matchedUser.email }));
            window.dispatchEvent(new Event('user-auth-change'));
            if (matchedUser.role === 'ADMIN') {
              navigate('/admin');
@@ -58,7 +58,7 @@ const Login: React.FC = () => {
           const newUsersList = [...usersList, newUser];
           localStorage.setItem('users', JSON.stringify(newUsersList));
           
-          localStorage.setItem('user', JSON.stringify({ name: newUser.firstName, role: 'USER', email: email }));
+          localStorage.setItem('user', JSON.stringify({ id: newUser.id, name: newUser.firstName, role: 'USER', email: email }));
           window.dispatchEvent(new Event('user-auth-change'));
           navigate('/');
         } else {

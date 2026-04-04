@@ -1,4 +1,4 @@
-import type { User, Vehicle, Station, Trip, Review, DashboardStats } from '../types';
+import type { User, Vehicle, Trip, Review, DashboardStats } from '../types';
 
 export const mockUsers: User[] = [
   {
@@ -23,39 +23,6 @@ export const mockUsers: User[] = [
   }
 ];
 
-export const mockStations: Station[] = [
-  {
-    id: 's1',
-    name: '001 - Hàm Nghi',
-    address: '10 Hàm Nghi - Phường Bến Nghé - Quận 1',
-    lat: 10.7715,
-    lng: 106.7042,
-    city: 'Hồ Chí Minh',
-    vehicleCapacity: 20,
-    currentVehicleCount: 5
-  },
-  {
-    id: 's2',
-    name: '002 - Cao Thắng',
-    address: '126 Hàm Nghi - Phường Nguyễn Thái Bình - Quận 1',
-    lat: 10.7705,
-    lng: 106.7022,
-    city: 'Hồ Chí Minh',
-    vehicleCapacity: 15,
-    currentVehicleCount: 8
-  },
-  {
-    id: 's3',
-    name: '003 - Vincom Center',
-    address: '72 Lê Thánh Tôn, Bến Nghé, Quận 1',
-    lat: 10.7780,
-    lng: 106.7025,
-    city: 'Hồ Chí Minh',
-    vehicleCapacity: 30,
-    currentVehicleCount: 12
-  }
-];
-
 export const mockVehicles: Vehicle[] = [
   {
     id: 'v1',
@@ -73,7 +40,7 @@ export const mockVehicles: Vehicle[] = [
     rating: 4.8,
     images: ['https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800'],
     features: { 'GPS': true, 'Helmet': true, 'Insurance': true },
-    stationId: 's1'
+    stationId: '001'
   },
   {
     id: 'v2',
@@ -90,7 +57,7 @@ export const mockVehicles: Vehicle[] = [
     rating: 4.5,
     images: ['https://images.unsplash.com/photo-1579621970221-5a046205ed86?auto=format&fit=crop&q=80&w=800'],
     features: { 'Helmet': true, 'Insurance': false },
-    stationId: 's2'
+    stationId: '001'
   },
   {
     id: 'v3',
@@ -107,7 +74,8 @@ export const mockVehicles: Vehicle[] = [
     ownerAvatar: 'https://i.pravatar.cc/150?u=vngo2',
     rating: 4.9,
     images: ['https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80&w=800'],
-    features: { 'GPS': true, 'Helmet': true }
+    features: { 'GPS': true, 'Helmet': true },
+    stationId: '001'
   },
   {
     id: 'v4',
@@ -124,7 +92,7 @@ export const mockVehicles: Vehicle[] = [
     rating: 4.6,
     images: ['https://images.unsplash.com/photo-1549317661-bc32c63f5001?auto=format&fit=crop&q=80&w=800'],
     features: { 'Helmet': true },
-    stationId: 's3'
+    stationId: '001'
   }
 ];
 

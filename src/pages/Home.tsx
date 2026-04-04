@@ -9,7 +9,6 @@ const Home: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('Tất cả loại xe');
-  const [pricingType, setPricingType] = useState<'BICYCLE' | 'E-BIKE'>('BICYCLE');
 
   useEffect(() => {
     const fetchHomeData = async () => {
@@ -66,67 +65,6 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className={styles.lightSection}>
-        <div className={`container ${styles.section}`}>
-          <h2 className={`text-center mb-4 ${styles.sectionTitle}`}>Bảng giá dịch vụ</h2>
-          
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
-            <div style={{ display: 'inline-flex', backgroundColor: 'var(--color-bg)', padding: '0.25rem', borderRadius: '50px' }}>
-              <button 
-                onClick={() => setPricingType('BICYCLE')}
-                style={{
-                  padding: '0.5rem 1.5rem', borderRadius: '50px', border: 'none', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
-                  backgroundColor: pricingType === 'BICYCLE' ? 'var(--color-primary)' : 'transparent',
-                  color: pricingType === 'BICYCLE' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                Xe đạp cơ
-              </button>
-              <button 
-                onClick={() => setPricingType('E-BIKE')}
-                style={{
-                  padding: '0.5rem 1.5rem', borderRadius: '50px', border: 'none', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
-                  backgroundColor: pricingType === 'E-BIKE' ? 'var(--color-primary)' : 'transparent',
-                  color: pricingType === 'E-BIKE' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                Xe đạp điện
-              </button>
-            </div>
-          </div>
-
-          <div className={styles.pricingGrid}>
-            <div className={styles.pricingCard}>
-              <h3>Vé lượt</h3>
-              <div className={styles.price}>{pricingType === 'BICYCLE' ? '10.000' : '20.000'}<span className={styles.currency}>đồng/lượt</span></div>
-              <ul className={styles.priceFeatures}>
-                <li>Thời lượng: 60 phút</li>
-                <li>Thời hạn: 60 phút</li>
-                <li>Cước phí quá thời lượng: 3.000đ/15 phút</li>
-              </ul>
-            </div>
-            <div className={`${styles.pricingCard} ${styles.pricingFeatured}`}>
-              <h3>Vé ngày</h3>
-              <div className={styles.price}>{pricingType === 'BICYCLE' ? '50.000' : '100.000'}<span className={styles.currency}>đồng/ngày</span></div>
-              <ul className={styles.priceFeatures}>
-                <li>Thời lượng: 450 phút</li>
-                <li>Thời hạn: 24h ngày đăng kí</li>
-                <li>Cước phí quá thời lượng: 3.000đ/15 phút</li>
-              </ul>
-            </div>
-            <div className={styles.pricingCard}>
-              <h3>Vé tuần</h3>
-              <div className={styles.price}>{pricingType === 'BICYCLE' ? '150.000' : '300.000'}<span className={styles.currency}>đồng/tuần</span></div>
-              <ul className={styles.priceFeatures}>
-                <li>Thời lượng: Sử dụng thỏa thích chuyến không quá 60 phút</li>
-                <li>Thời hạn: 7 ngày kể từ ngày đăng ký vé</li>
-                <li>Cước phí quá thời lượng: 3.000đ/15 phút</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Vehicle Listing / Explore */}
       <section className={`container mt-8 mb-8 ${styles.section}`}>

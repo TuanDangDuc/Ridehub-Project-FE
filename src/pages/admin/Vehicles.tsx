@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { mockVehicles } from '../../services/mockData';
-import type { Vehicle } from '../../types';
+import type { Vehicle, Station } from '../../types';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Edit, Trash2 } from 'lucide-react';
+import { api } from '../../services/api';
 
 const Vehicles: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>(() => {
-    const saved = localStorage.getItem('vehicles');
+    const saved = localStorage.getItem('vehicles_v4');
     if (saved) {
       const parsed = JSON.parse(saved);
       // Auto upgrade old items
@@ -18,9 +19,16 @@ const Vehicles: React.FC = () => {
         priceWeek: v.priceWeek || (v.type === 'Xe đạp điện' ? 300000 : 150000)
       }));
     }
-    localStorage.setItem('vehicles', JSON.stringify(mockVehicles));
+    localStorage.setItem('vehicles_v4', JSON.stringify(mockVehicles));
     return mockVehicles;
   });
+
+  const [stations, setStations] = useState<Station[]>([]);
+  const [filterStation, setFilterStation] = useState('');
+
+  React.useEffect(() => {
+    api.getStations().then(setStations);
+  }, []);
 
   const [filterType, setFilterType] = useState('Tất cả loại xe');
 
@@ -62,7 +70,7 @@ const Vehicles: React.FC = () => {
       updatedVehicles = [newVehicle, ...vehicles];
     }
     setVehicles(updatedVehicles);
-    localStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
+    localStorage.setItem('vehicles_v4', JSON.stringify(updatedVehicles));
     closeModal();
   };
 
@@ -70,7 +78,7 @@ const Vehicles: React.FC = () => {
     if (confirm('Bạn có chắc chắn muốn ẩn/ngừng hoạt động phương tiện này?')) {
       const updatedVehicles = vehicles.filter(v => v.id !== id);
       setVehicles(updatedVehicles);
-      localStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
+      localStorage.setItem('vehicles_v4', JSON.stringify(updatedVehicles));
     }
   };
 
@@ -83,6 +91,14 @@ const Vehicles: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '1.75rem', color: 'var(--color-primary)' }}>Quản lý phương tiện</h1>
         <div style={{ display: 'flex', gap: '1rem' }}>
+          <select 
+            value={filterStation}
+            onChange={(e) => setFilterStation(e.target.value)}
+            style={{ padding: '0.625rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', backgroundColor: 'white', color: 'var(--color-text-primary)', outline: 'none' }}
+          >
+            <option value="">Chọn trạm xe</option>
+            {stations.map(s => <option key={s.id} value={s.id}>{s.id} - {s.name}</option>)}
+          </select>
           <select 
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
@@ -110,8 +126,9 @@ const Vehicles: React.FC = () => {
           <tbody>
             {(() => {
               const filteredVehicles = vehicles.filter(v => {
-                if (filterType === 'Tất cả loại xe') return true;
-                return v.type === filterType;
+                if (filterType !== 'Tất cả loại xe' && v.type !== filterType) return false;
+                if (filterStation && v.stationId !== filterStation) return false;
+                return true;
               });
 
               if (filteredVehicles.length === 0) {
@@ -196,6 +213,13 @@ const Vehicles: React.FC = () => {
                   <option value="AVAILABLE">Sẵn sàng</option>
                   <option value="RENTED">Đang cho thuê</option>
                   <option value="MAINTENANCE">Bảo trì</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem', fontWeight: 500 }}>Trạm xe</label>
+                <select style={{ width: '100%', padding: '0.625rem 1rem', borderRadius: '0.375rem', border: '1px solid #ced4da', backgroundColor: 'white' }} value={formData.stationId || ''} onChange={e => setFormData({...formData, stationId: e.target.value})}>
+                  <option value="">Chưa có trạm</option>
+                  {stations.map(s => <option key={s.id} value={s.id}>{s.id} - {s.name}</option>)}
                 </select>
               </div>
               <Input label="Thương hiệu" required value={formData.brand || ''} onChange={e => setFormData({...formData, brand: e.target.value})} />

@@ -33,18 +33,6 @@ const VehicleDetail: React.FC = () => {
     fetchDetail();
   }, [id]);
 
-  const handleBookClick = () => {
-    const savedUser = localStorage.getItem('user');
-    if (!savedUser) {
-      if (window.confirm("Vui lòng đăng nhập để thực hiện chức năng thuê xe. Chuyển đến trang đăng nhập?")) {
-        navigate('/login');
-      }
-      return;
-    }
-    if (vehicle) {
-      navigate(`/book/${vehicle.id}`);
-    }
-  };
 
   if (loading) return <div className="container mt-8 text-center"><Spinner size="lg" /></div>;
   if (!vehicle) return <div className="container mt-8 text-center"><p>Không tìm thấy phương tiện.</p><Button onClick={() => navigate('/')}>Quay lại</Button></div>;
@@ -74,10 +62,9 @@ const VehicleDetail: React.FC = () => {
           </div>
 
           <div className={styles.priceBox}>
-            <div className={styles.price}>{formatPrice(vehicle.priceSingle || (vehicle.type === 'Xe đạp điện' ? 20000 : 10000))}<span>/lượt</span></div>
+            <div className={styles.price}>{formatPrice(Math.round((vehicle.priceSingle || (vehicle.type === 'Xe đạp điện' ? 20000 : 10000)) / 60))}<span>/phút</span></div>
             <p>Bao gồm bảo hiểm cơ bản & hỗ trợ 24/7</p>
           </div>
-
           <div className={styles.owner}>
             <p className={styles.sectionTitle}>Chủ sở hữu</p>
             <div className={styles.ownerInfo}>
@@ -85,15 +72,10 @@ const VehicleDetail: React.FC = () => {
               <span>{vehicle.ownerName}</span>
             </div>
           </div>
-
-
-          <div className={styles.actions}>
-            <Button size="lg" fullWidth disabled={vehicle.status !== 'AVAILABLE'} onClick={handleBookClick}>
-              {vehicle.status === 'AVAILABLE' ? 'Chọn thuê' : 'Xe đang được thuê'}
-            </Button>
-          </div>
         </div>
       </div>
+
+
 
       {/* Features & Reviews */}
       <div className={styles.detailsGrid}>

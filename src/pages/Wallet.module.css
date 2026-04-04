@@ -1,0 +1,217 @@
+.walletContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+  .walletContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
+.leftCol, .rightCol {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--color-text-primary);
+}
+
+.card {
+  background: var(--color-primary);
+  border-radius: var(--radius-lg);
+  color: white;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 114, 255, 0.3);
+}
+
+.cardDivider {
+  background: rgba(255, 255, 255, 0.3);
+  width: 1px;
+  height: 100%;
+}
+
+.cardCol {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.cardItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.cardLabel {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+}
+
+.cardValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.historySection {
+  margin-top: 1rem;
+}
+
+.emptyHistory {
+  color: var(--color-text-secondary);
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+.topupForm {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 0;
+}
+
+.presetGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.presetBtn {
+  background: var(--color-background);
+  border: 1px solid transparent;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--color-text-primary);
+}
+
+.presetBtn:hover, .presetBtn.active {
+  background: rgba(0, 114, 255, 0.1);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.warningText {
+  color: #ff9800;
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  line-height: 1.5;
+}
+
+.payBtn {
+  width: 100%;
+  background: var(--color-primary);
+  color: white;
+  padding: 1rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 2rem;
+  transition: background 0.2s ease;
+}
+
+.payBtn:hover {
+  background: #0056b3;
+}
+
+.payBtn:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+/* Modal styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: var(--shadow-lg);
+}
+
+.qrImage {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.btnGroup {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.confirmBtn {
+  flex: 1;
+  background: var(--color-success);
+  color: white;
+  padding: 0.75rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.confirmBtn:hover {
+  background: #218838;
+}
+
+.cancelBtn {
+  flex: 1;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  padding: 0.75rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cancelBtn:hover {
+  background: #e2e8f0;
+}

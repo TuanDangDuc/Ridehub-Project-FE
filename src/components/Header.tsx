@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Header.module.css';
 import { Link, useNavigate } from 'react-router-dom';
-import { User } from 'lucide-react';
+import { User, Scan } from 'lucide-react';
+import { ScannerModal } from './ScannerModal';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<{name: string, role: string, avatarUrl?: string} | null>(null);
+  const [balance, setBalance] = useState<number>(0);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   useEffect(() => {
     const checkUser = () => {
@@ -13,15 +16,49 @@ const Header: React.FC = () => {
       setUser(storedUser ? JSON.parse(storedUser) : null);
     };
 
+    const checkBalance = () => {
+      const storedUser = localStorage.getItem('user');
+      const user = storedUser ? JSON.parse(storedUser) : null;
+      if (!user) {
+         setBalance(0);
+         return;
+      }
+      const userId = user.id || 'u1';
+      
+      // Auto-migrate if they have legacy balance stuck in 'undefined'
+      const legacyBalance = localStorage.getItem('vngo_wallet_balance_undefined');
+      if (legacyBalance) {
+        localStorage.setItem(`vngo_wallet_balance_${userId}`, legacyBalance);
+        localStorage.removeItem('vngo_wallet_balance_undefined');
+      }
+      
+      const storedBalance = localStorage.getItem(`vngo_wallet_balance_${userId}`);
+      setBalance(storedBalance ? parseInt(storedBalance, 10) : 0);
+    };
+
     checkUser();
-    window.addEventListener('storage', checkUser);
+    checkBalance();
+    
+    // Listen for storage events (e.g. from other tabs or Wallet page)
+    const handleStorageChange = () => {
+      checkUser();
+      checkBalance();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
     window.addEventListener('user-auth-change', checkUser);
+    window.addEventListener('wallet-updated', checkBalance);
 
     return () => {
-      window.removeEventListener('storage', checkUser);
+      window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('user-auth-change', checkUser);
+      window.removeEventListener('wallet-updated', checkBalance);
     };
   }, []);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -33,13 +70,35 @@ const Header: React.FC = () => {
   return (
     <header className={styles.header}>
       <div className={`container ${styles.headerContainer}`}>
-        <Link to="/" className={styles.logo}>
-          VN<span>GO</span>
-        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginRight: 'auto' }}>
+          <Link to="/" className={styles.logo} style={{ marginRight: 0 }}>
+            VN<span>GO</span>
+          </Link>
+          <button 
+            onClick={() => setIsScannerOpen(true)}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.4rem', 
+              background: 'var(--color-primary)', 
+              color: 'white', 
+              border: 'none', 
+              padding: '0.4rem 0.75rem', 
+              borderRadius: '8px', 
+              cursor: 'pointer', 
+              fontWeight: 600,
+              fontSize: '0.9rem'
+            }}
+            title="Quét mã thuê xe"
+          >
+            <Scan size={16} />
+            Quét để thuê xe
+          </button>
+        </div>
         
         <nav className={styles.nav}>
           <Link to="/how-to-use" className={styles.navLink}>Hướng dẫn sử dụng</Link>
-          <Link to="/vehicles" className={styles.navLink}>Bảng giá</Link>
+          <Link to="/vehicles" className={styles.navLink}>Danh sách xe</Link>
           <Link to="/stations" className={styles.navLink}>Danh sách trạm</Link>
           <Link to="/my-bookings" className={styles.navLink}>Xe đã thuê</Link>
           <Link to="/about" className={styles.navLink}>Về chúng tôi</Link>
@@ -47,8 +106,11 @@ const Header: React.FC = () => {
         
         <div className={styles.actions}>
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <Link to="/profile" className={styles.avatarLink} title="Hồ sơ cá nhân">
+            <div className={styles.userMenu}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontWeight: 600, color: 'var(--color-primary)' }}>{formatCurrency(balance)}</span>
+              </div>
+              <Link to="/profile" className={styles.avatarLink} title="Tài khoản của tôi">
                 <div className={styles.avatarCircle} style={{ overflow: 'hidden' }}>
                   {user.avatarUrl ? (
                     <img src={user.avatarUrl} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -57,21 +119,29 @@ const Header: React.FC = () => {
                   )}
                 </div>
               </Link>
-              {user.role === 'ADMIN' && (
-                 <Link to="/admin" style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-text-secondary)', textDecoration: 'none' }}>Dashboard</Link>
-              )}
-              <button 
-                onClick={handleLogout}
-                style={{ background: 'rgba(220,53,69,0.1)', border: 'none', color: 'var(--color-error)', cursor: 'pointer', fontWeight: 600, padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)' }}
-              >
-                Đăng xuất
-              </button>
+              
+              <div className={styles.dropdown}>
+                <Link to="/profile" className={styles.dropdownItem}>Hồ sơ của tôi</Link>
+                <Link to="/wallet" className={styles.dropdownItem}>Nạp tiền</Link>
+                {user.role === 'ADMIN' && (
+                  <>
+                    <div className={styles.dropdownDivider}></div>
+                    <Link to="/admin" className={styles.dropdownItem}>Dashboard</Link>
+                  </>
+                )}
+                <div className={styles.dropdownDivider}></div>
+                <button onClick={handleLogout} className={styles.dropdownItem} style={{ color: 'var(--color-error)' }}>
+                  Đăng xuất
+                </button>
+              </div>
             </div>
           ) : (
             <Link to="/login" className={`btn ${styles.loginBtn}`}>Đăng nhập</Link>
           )}
         </div>
       </div>
+      
+      <ScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} />
     </header>
   );
 };

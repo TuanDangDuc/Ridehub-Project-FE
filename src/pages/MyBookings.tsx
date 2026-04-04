@@ -1,16 +1,39 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
-import type { Trip } from '../types';
+import type { Trip, Station, Vehicle } from '../types';
 import { Spinner } from '../components/Spinner';
+import { ReturnVehicleModal } from '../components/ReturnVehicleModal';
 import { Button } from '../components/Button';
 import { CalendarX } from 'lucide-react';
 import styles from './MyBookings.module.css';
 
 const MyBookings: React.FC = () => {
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedTripId, setExpandedTripId] = useState<string | null>(null);
+  const [returningTripId, setReturningTripId] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [, setTick] = useState(0);
+
+  // Force re-render every minute for ONGOING trips
+  useEffect(() => {
+    const timer = setInterval(() => setTick(t => t + 1), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const getDurationString = (start: string, end: string, status: string) => {
+    const startDate = new Date(start);
+    const endDate = status === 'ONGOING' ? new Date() : new Date(end);
+    const diffMs = Math.max(0, endDate.getTime() - startDate.getTime());
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 60) return `${diffMins} phút`;
+    const hours = Math.floor(diffMins / 60);
+    const mins = diffMins % 60;
+    return `${hours} giờ ${mins > 0 ? mins + ' phút' : ''}`;
+  };
 
   useEffect(() => {
     const checkUserAndFetchTrips = async () => {
@@ -22,8 +45,14 @@ const MyBookings: React.FC = () => {
       }
       
       try {
-        const userTrips = await api.getUserTrips('u1');
+        const [userTrips, allVehicles, allStations] = await Promise.all([
+          api.getUserTrips('u1'),
+          api.getVehicles(),
+          api.getStations()
+        ]);
         setTrips(userTrips);
+        setVehicles(allVehicles);
+        setStations(allStations);
       } catch (error) {
         console.error(error);
       } finally {
@@ -31,6 +60,11 @@ const MyBookings: React.FC = () => {
       }
     };
     checkUserAndFetchTrips();
+
+    window.addEventListener('trip-updated', checkUserAndFetchTrips);
+    return () => {
+      window.removeEventListener('trip-updated', checkUserAndFetchTrips);
+    };
   }, []);
 
   const handleStatusChange = async (id: string, status: string) => {
@@ -92,12 +126,18 @@ const MyBookings: React.FC = () => {
 
                 <div className={styles.tripStats}>
                   <div className={styles.statBox}>
-                    <span className={styles.statLabel}>Khoảng cách</span>
-                    <strong className={styles.statValue}>{trip.distance} km</strong>
+                    <span className={styles.statLabel}>Thời gian thuê</span>
+                    <strong className={styles.statValue} style={{ color: trip.status === 'ONGOING' ? '#d97706' : 'inherit' }}>
+                      {getDurationString(trip.startTime, trip.endTime, trip.status)}
+                    </strong>
                   </div>
                   <div className={styles.statBox}>
                     <span className={styles.statLabel}>Tổng chi phí</span>
-                    <strong className={styles.statValue}>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(trip.totalCost)}</strong>
+                    <strong className={styles.statValue}>
+                      {trip.status === 'ONGOING' 
+                        ? <span style={{ color: '#d97706' }}>Đang tính...</span> 
+                        : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(trip.totalCost)}
+                    </strong>
                   </div>
                 </div>
               </div>
@@ -108,27 +148,43 @@ const MyBookings: React.FC = () => {
                 </Button>
                 {trip.status === 'ONGOING' && (
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <Button variant="primary" size="sm" onClick={() => handleStatusChange(trip.id, 'COMPLETED')}>Trả xe</Button>
+                    <Button variant="primary" size="sm" onClick={() => setReturningTripId(trip.id)}>Trả xe</Button>
                     <Button variant="danger" size="sm" onClick={() => handleStatusChange(trip.id, 'CANCELLED')}>Hủy chuyến</Button>
                   </div>
                 )}
               </div>
               
-              {expandedTripId === trip.id && (
-                <div className={styles.invoiceDetail}>
-                  <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'var(--color-primary)' }}>Thông tin chuyến đi</h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.95rem' }}>
-                    <p><strong>Nhận xe:</strong> {new Date(trip.startTime).toLocaleString('vi-VN')} tại Hàm Nghi (TP. Hồ Chí Minh)</p>
-                    <p>
-                      <strong>Trả xe:</strong> {trip.status === 'ONGOING' ? <span style={{ color: '#d97706', fontWeight: 600 }}>Chưa trả xe (Thời gian đang tính)</span> : `${new Date(trip.endTime).toLocaleString('vi-VN')} tại Bất kỳ trạm VNGo nào`}
-                    </p>
+              {expandedTripId === trip.id && (() => {
+                const vehicle = vehicles.find(v => v.id === trip.vehicleId);
+                const startStation = stations.find(s => s.id === trip.startStationId);
+                const pricePerMin = vehicle?.priceSingle ? Math.round(vehicle.priceSingle / 60) : 0;
+                
+                return (
+                  <div className={styles.invoiceDetail}>
+                    <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'var(--color-primary)' }}>Thông tin chuyến đi</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.95rem' }}>
+                      <p><strong>Mã số xe:</strong> {vehicle?.code || 'Không xác định'}</p>
+                      <p><strong>Giá thuê mỗi phút:</strong> {pricePerMin} đ/phút</p>
+                      <p><strong>Nhận xe:</strong> {new Date(trip.startTime).toLocaleString('vi-VN')} tại {startStation ? startStation.name : 'Trạm không xác định'}</p>
+                      <p>
+                        <strong>Trả xe:</strong> {trip.status === 'ONGOING' ? <span style={{ color: '#d97706', fontWeight: 600 }}>Chưa trả xe (Thời gian đang tính)</span> : `${new Date(trip.endTime).toLocaleString('vi-VN')} tại ${stations.find(s => s.id === trip.endStationId)?.name || 'Trạm VNGo'}`}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
           ))}
         </div>
       )}
+
+      <ReturnVehicleModal
+        isOpen={!!returningTripId}
+        onClose={() => setReturningTripId(null)}
+        trip={trips.find(t => t.id === returningTripId) || null}
+        stations={stations}
+        vehicle={vehicles.find(v => v.id === trips.find(t => t.id === returningTripId)?.vehicleId)}
+      />
     </div>
   );
 };

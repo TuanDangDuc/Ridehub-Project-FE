@@ -37,7 +37,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
         <div className={styles.details}>
           <div className={styles.detailItem}>
             <Banknote size={16} />
-            <span>Từ {formatPrice(vehicle.priceSingle || (vehicle.type === 'Xe đạp điện' ? 20000 : 10000))}/lượt</span>
+            <span>{formatPrice(Math.round((vehicle.priceSingle || (vehicle.type === 'Xe đạp điện' ? 20000 : 10000)) / 60))}/phút</span>
           </div>
           {vehicle.batteryLevel && (
             <div className={styles.detailItem}>

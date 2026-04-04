@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import styles from './AdminLayout.module.css';
-import { LayoutDashboard, Users, Bike, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Bike, MapPin, LogOut } from 'lucide-react';
 
 const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -22,15 +22,16 @@ const AdminLayout: React.FC = () => {
           <Link to="/admin"><LayoutDashboard size={20} /> Tổng quan</Link>
           <Link to="/admin/users"><Users size={20} /> Người dùng</Link>
           <Link to="/admin/vehicles"><Bike size={20} /> Phương tiện</Link>
+          <Link to="/admin/stations"><MapPin size={20} /> Trạm xe</Link>
         </nav>
-        <div className={styles.sidebarFooter}>
-          <button className={styles.logoutBtn} onClick={handleLogout}><LogOut size={20} /> Đăng xuất</button>
-        </div>
       </aside>
       <main className={styles.mainContent}>
         <header className={styles.adminHeader}>
-          <div className={styles.userInfo}>
+          <div className={styles.userInfo} style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <span>Admin, Welcome!</span>
+            <button className={styles.logoutBtn} style={{ width: 'auto', padding: '0.4rem 1rem' }} onClick={handleLogout}>
+              <LogOut size={16} /> Đăng xuất
+            </button>
           </div>
         </header>
         <div className={styles.contentArea}>

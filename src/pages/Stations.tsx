@@ -5,7 +5,8 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import styles from './Stations.module.css';
 
-import { MOCK_STATIONS } from '../utils/stations';
+import { api } from '../services/api';
+import type { Station } from '../types';
 
 const bikeIcon = L.divIcon({
   html: `<div style="background-color: #f39c12; border-radius: 50%; width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); position: relative;">
@@ -35,6 +36,11 @@ const Stations: React.FC = () => {
   const [activeStationId, setActiveStationId] = useState<string | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
   const markerRefs = useRef<{ [key: string]: L.Marker }>({});
+  const [stations, setStations] = useState<Station[]>([]);
+
+  useEffect(() => {
+    api.getStations().then(setStations);
+  }, []);
 
   const removeAccents = (str: string) => {
     return str
@@ -44,7 +50,8 @@ const Stations: React.FC = () => {
       .replace(/Đ/g, 'D');
   };
 
-  const filteredStations = MOCK_STATIONS.filter(station => {
+  const filteredStations = stations.filter(station => {
+    if (station.status === 'INACTIVE') return false;
     const term = removeAccents(keyword.toLowerCase());
     const nameMatch = removeAccents(station.name.toLowerCase()).includes(term);
     const addressMatch = removeAccents(station.address.toLowerCase()).includes(term);
@@ -121,8 +128,8 @@ const Stations: React.FC = () => {
                 onClick={() => handleStationClick(station, index)}
               >
                 <div className={styles.stationInfo}>
-                  <h4 className={styles.stationName}>{station.id} - {station.name}</h4>
-                  <p className={styles.stationAddress}>{station.address}</p>
+                  <h4 className={styles.stationName} style={{ marginBottom: '0.35rem', fontSize: '0.95rem', fontWeight: 600 }}>{station.id} - {station.name}</h4>
+                  <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>{station.address}</p>
                 </div>
                 <div className={styles.stationIcon}>
                   <MapPin size={24} color="#dc3545" />
@@ -157,9 +164,7 @@ const Stations: React.FC = () => {
                     <h3 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: '#d32f2f' }}>
                       {station.id} - {station.name}
                     </h3>
-                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#333' }}>
-                      {station.address}
-                    </p>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#555', lineHeight: 1.4 }}>{station.address}</p>
                   </div>
                 </Popup>
               </Marker>
