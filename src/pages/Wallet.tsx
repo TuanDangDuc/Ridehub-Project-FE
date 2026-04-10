@@ -2,27 +2,28 @@ import React, { useState, useEffect } from 'react';
 import styles from './Wallet.module.css';
 
 const Wallet: React.FC = () => {
-  const [balance, setBalance] = useState<number>(0);
-  const [debt, setDebt] = useState<number>(0);
+  const getUserAndId = () => {
+    const userStr = localStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    return user ? user.id || 'u1' : 'u1';
+  };
+
+  const [balance, setBalance] = useState<number>(() => {
+    const userId = getUserAndId();
+    const savedBalance = localStorage.getItem(`vngo_wallet_balance_${userId}`);
+    return savedBalance ? parseInt(savedBalance, 10) : 0;
+  });
+  const [debt, setDebt] = useState<number>(() => {
+    const userId = getUserAndId();
+    const savedDebt = localStorage.getItem(`vngo_wallet_debt_${userId}`);
+    return savedDebt ? parseInt(savedDebt, 10) : 0;
+  });
   const [amountInput, setAmountInput] = useState<string>('');
   const [showQR, setShowQR] = useState(false);
   
   useEffect(() => {
-    // Attempt to load balance from local storage or mock
-    const userStr = localStorage.getItem('user');
-    const user = userStr ? JSON.parse(userStr) : null;
-    if (!user) return;
-
-    const userId = user.id || 'u1';
-
-    const savedBalance = localStorage.getItem(`vngo_wallet_balance_${userId}`);
-    if (savedBalance) {
-      setBalance(parseInt(savedBalance, 10));
-    }
-    const savedDebt = localStorage.getItem(`vngo_wallet_debt_${userId}`);
-    if (savedDebt) {
-      setDebt(parseInt(savedDebt, 10));
-    }
+    // Only required if depending on specific mounting behavior, 
+    // but initialized correctly.
   }, []);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {

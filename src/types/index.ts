@@ -1,5 +1,5 @@
 export type Role = 'USER' | 'ADMIN';
-export type Status = 'ACTIVE' | 'BANNED' | 'AVAILABLE' | 'RENTED' | 'MAINTENANCE';
+
 
 export interface User {
   id: string;

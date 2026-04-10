@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Station } from '../../types';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
-import { Edit, Trash2, Power } from 'lucide-react';
+
 import { api } from '../../services/api';
 
 const AdminStations: React.FC = () => {

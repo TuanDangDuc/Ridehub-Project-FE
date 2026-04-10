@@ -1,4 +1,4 @@
-import type { User, Vehicle, Trip, Review, DashboardStats } from '../types';
+import type { User, Vehicle, Trip } from '../types';
 
 export const mockUsers: User[] = [
   {
@@ -96,22 +96,6 @@ export const mockVehicles: Vehicle[] = [
   }
 ];
 
-export const mockReviews: Review[] = [
-  {
-    id: 'r1',
-    userId: 'u1',
-    vehicleId: 'v1',
-    content: 'Xe chạy êm, pin trâu, quy trình nhận xe nhanh chóng.',
-    rating: 5
-  },
-  {
-    id: 'r2',
-    userId: 'u1',
-    vehicleId: 'v4',
-    content: 'Xe sạch sẽ, tuy nhiên điều hòa hơi yếu một chút.',
-    rating: 4
-  }
-];
 
 export const mockTrips: Trip[] = [
   {
@@ -128,8 +112,4 @@ export const mockTrips: Trip[] = [
   }
 ];
 
-export const mockDashboardStats: DashboardStats = {
-  totalVehicles: 154,
-  rentedVehicles: 42,
-  totalRevenue: 25400000
-};
+

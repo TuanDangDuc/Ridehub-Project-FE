@@ -18,7 +18,7 @@ const AdminLayout: React.FC = () => {
         if (user.role !== 'ADMIN') {
           navigate('/', { replace: true }); // Chuyển hướng người dùng thường về trang chủ
         }
-      } catch (e) {
+      } catch {
         localStorage.removeItem('user');
         navigate('/login', { replace: true });
       }

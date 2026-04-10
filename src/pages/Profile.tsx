@@ -48,7 +48,7 @@ const Profile: React.FC = () => {
       
       setSuccess('Cập nhật hồ sơ thành công!');
       setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
+    } catch {
       // Handle error
     } finally {
       setIsSaving(false);

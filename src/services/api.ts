@@ -249,7 +249,7 @@ export const api = {
 
       const savedUsers = localStorage.getItem('users');
       if (savedUsers) {
-        let users = JSON.parse(savedUsers);
+        const users = JSON.parse(savedUsers);
         const userIndex = users.findIndex((u: any) => u.email === oldEmail);
         if (userIndex !== -1) {
             if (data.name) {

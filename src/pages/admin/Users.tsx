@@ -35,8 +35,8 @@ const Users: React.FC = () => {
   const toggleStatus = (id: string) => {
     const updatedUsers = users.map(u => {
       if (u.id === id) {
-        let newStatus: User['status'] = u.status === 'ACTIVE' ? 'BANNED' : 'ACTIVE';
-        return { ...u, status: newStatus as any };
+        const newStatus: User['status'] = u.status === 'ACTIVE' ? 'BANNED' : 'ACTIVE';
+        return { ...u, status: newStatus };
       }
       return u;
     });
@@ -47,8 +47,8 @@ const Users: React.FC = () => {
   const toggleRole = (id: string) => {
     const updatedUsers = users.map(u => {
       if (u.id === id) {
-        let newRole: User['role'] = u.role === 'ADMIN' ? 'USER' : 'ADMIN';
-        return { ...u, role: newRole as any };
+        const newRole: User['role'] = u.role === 'ADMIN' ? 'USER' : 'ADMIN';
+        return { ...u, role: newRole };
       }
       return u;
     });

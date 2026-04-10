@@ -50,7 +50,7 @@ const Booking: React.FC = () => {
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, navigate]);
 
   if (loading) return <div className="container mt-8 text-center"><Spinner size="lg" /></div>;
   if (!vehicle) return <div className="container mt-8 text-center">Không tìm thấy phương tiện.</div>;
