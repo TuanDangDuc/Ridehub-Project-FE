@@ -17,9 +17,9 @@ const MyBookings: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [, setTick] = useState(0);
 
-  // Force re-render every minute for ONGOING trips
+  // Force re-render every second for ONGOING trips
   useEffect(() => {
-    const timer = setInterval(() => setTick(t => t + 1), 60000);
+    const timer = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -27,12 +27,15 @@ const MyBookings: React.FC = () => {
     const startDate = new Date(start);
     const endDate = status === 'ONGOING' ? new Date() : new Date(end);
     const diffMs = Math.max(0, endDate.getTime() - startDate.getTime());
-    const diffMins = Math.floor(diffMs / 60000);
     
-    if (diffMins < 60) return `${diffMins} phút`;
+    const diffSecsTotal = Math.floor(diffMs / 1000);
+    const secs = diffSecsTotal % 60;
+    const diffMins = Math.floor(diffSecsTotal / 60);
+    
+    if (diffMins < 60) return `${diffMins} phút ${secs} giây`;
     const hours = Math.floor(diffMins / 60);
     const mins = diffMins % 60;
-    return `${hours} giờ ${mins > 0 ? mins + ' phút' : ''}`;
+    return `${hours} giờ ${mins > 0 ? mins + ' phút ' : ''}${secs} giây`;
   };
 
   useEffect(() => {
@@ -67,11 +70,7 @@ const MyBookings: React.FC = () => {
     };
   }, []);
 
-  const handleStatusChange = async (id: string, status: string) => {
-    await api.updateTripStatus(id, status);
-    const now = new Date().toISOString();
-    setTrips(prev => prev.map(t => t.id === id ? { ...t, status: status as any, ...(status === 'COMPLETED' ? { endTime: now } : {}) } : t));
-  };
+
 
   if (loading) return <div className="container mt-8 text-center"><Spinner size="lg" /></div>;
 
@@ -107,7 +106,7 @@ const MyBookings: React.FC = () => {
               <div className={styles.tripHeader}>
                 <div className={styles.tripId}>Mã chuyến: #{trip.id}</div>
                 <div className={styles.statusBadge} data-status={trip.status}>
-                  {trip.status === 'COMPLETED' ? 'Hoàn thành' : trip.status === 'ONGOING' ? 'Đang diễn ra' : 'Đã hủy'}
+                  {trip.status === 'COMPLETED' ? 'Hoàn thành' : 'Đang diễn ra'}
                 </div>
               </div>
               
@@ -149,7 +148,6 @@ const MyBookings: React.FC = () => {
                 {trip.status === 'ONGOING' && (
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <Button variant="primary" size="sm" onClick={() => setReturningTripId(trip.id)}>Trả xe</Button>
-                    <Button variant="danger" size="sm" onClick={() => handleStatusChange(trip.id, 'CANCELLED')}>Hủy chuyến</Button>
                   </div>
                 )}
               </div>

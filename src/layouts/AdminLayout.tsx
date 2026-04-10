@@ -1,10 +1,31 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import styles from './AdminLayout.module.css';
 import { LayoutDashboard, Users, Bike, MapPin, LogOut } from 'lucide-react';
 
 const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) {
+        navigate('/login', { replace: true });
+        return;
+      }
+      try {
+        const user = JSON.parse(userStr);
+        if (user.role !== 'ADMIN') {
+          navigate('/', { replace: true }); // Chuyển hướng người dùng thường về trang chủ
+        }
+      } catch (e) {
+        localStorage.removeItem('user');
+        navigate('/login', { replace: true });
+      }
+    };
+    
+    checkAuth();
+  }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem('user');

@@ -164,24 +164,7 @@ export const api = {
       }, 500);
     });
   },
-  updateTripStatus: async (tripId: string, newStatus: string): Promise<void> => {
-    const trips = getLocalTrips();
-    const tIndex = trips.findIndex((t: any) => t.id === tripId);
-    if (tIndex !== -1) {
-        const trip = trips[tIndex];
-        
-        if (newStatus === 'CANCELLED') {
-           trip.status = 'CANCELLED';
-           const vehicles = getLocalVehicles();
-           const vIndex = vehicles.findIndex((v: any) => v.id === trip.vehicleId);
-           if (vIndex !== -1) {
-               vehicles[vIndex].status = 'AVAILABLE';
-               localStorage.setItem('vehicles_v4', JSON.stringify(vehicles));
-           }
-           localStorage.setItem('trips_v3', JSON.stringify(trips));
-        }
-    }
-  },
+
   returnVehicle: async (tripId: string, endStationId: string): Promise<Trip> => {
     return new Promise((resolve, reject) => {
       setTimeout(() => {

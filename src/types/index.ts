@@ -39,7 +39,7 @@ export interface Trip {
   endTime: string;
   distance: number;
   totalCost: number;
-  status: 'COMPLETED' | 'ONGOING' | 'CANCELLED';
+  status: 'COMPLETED' | 'ONGOING';
   startStationId: string;
   endStationId: string;
   vehicleId: string;
