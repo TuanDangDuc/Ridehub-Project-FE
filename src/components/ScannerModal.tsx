@@ -34,8 +34,18 @@ export const ScannerModal: React.FC<ScannerModalProps> = ({ isOpen, onClose }) =
       const userId = (parsedUser && parsedUser.id) ? parsedUser.id : 'u1';
       
 
-      // Wait, we need api.createTrip(code)
-      await api.createTrip(code, userId);
+      const stations = await api.getStations();
+      const pricings = await api.getPricings();
+      
+      const startStationId = stations.length > 0 ? stations[0].id : undefined;
+      const pricingId = pricings.length > 0 ? pricings[0].id : undefined;
+
+      await api.createTrip({
+        userId,
+        vehicleId: code,
+        startStationId,
+        pricingId
+      });
       
       onClose();
       window.dispatchEvent(new Event('trip-updated'));

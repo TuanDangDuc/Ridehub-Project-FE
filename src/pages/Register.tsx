@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { mockUsers } from '../services/mockData';
-import type { User } from '../types';
+import { authService } from '../services/auth';
+
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
@@ -21,40 +21,32 @@ const Register: React.FC = () => {
     setIsLoading(true);
     setError('');
 
-    const saved = localStorage.getItem('users');
-    const usersList: User[] = saved ? JSON.parse(saved) : mockUsers;
+    try {
+      await authService.register({
+        username: email.split('@')[0],
+        email: email,
+        password: password,
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
+      });
 
-    if (usersList.some(u => u.email === email)) {
+      // Redirect sau 1 giây báo thành công
+      setTimeout(() => {
+        setIsLoading(false);
+        navigate('/login');
+      }, 1000);
+    } catch (err: any) {
       setIsLoading(false);
-      setError('Email đã được sử dụng!');
-      return;
+      setError(err.message || 'Đăng ký thất bại, email có thể đã được sử dụng!');
     }
-
-    const newUser: User = {
-      id: 'u' + Date.now(),
-      userName: email.split('@')[0],
-      email: email,
-      firstName: firstName,
-      lastName: lastName,
-      avatarUrl: `https://i.pravatar.cc/150?u=${Date.now()}`,
-      role: 'USER',
-      status: 'ACTIVE'
-    };
-
-    const newUsersList = [...usersList, newUser];
-    localStorage.setItem('users', JSON.stringify(newUsersList));
-
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate('/login');
-    }, 1000);
   };
 
   return (
     <div className={styles.authContainer}>
       <div className={styles.authCard}>
-        <div className={styles.logo}>
-          TN<span>GO</span>Clone
+        <div className={styles.logo} style={{ fontSize: '2rem', fontWeight: 'bold' }}>
+          VN<span>GO</span>
         </div>
         <h2>Đăng ký tài khoản</h2>
         <p className={styles.subtitle}>Mở khóa hành trình của bạn</p>

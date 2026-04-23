@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { mockVehicles } from '../../services/mockData';
+import { vehicleService } from '../../services/vehicle';
 import type { Vehicle, Station } from '../../types';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
@@ -7,27 +7,22 @@ import { Edit, Trash2, X } from 'lucide-react';
 import { api } from '../../services/api';
 
 const Vehicles: React.FC = () => {
-  const [vehicles, setVehicles] = useState<Vehicle[]>(() => {
-    const saved = localStorage.getItem('vehicles_v4');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      // Auto upgrade old items
-      return parsed.map((v: any) => ({
-        ...v,
-        priceSingle: v.priceSingle || (v.type === 'Xe đạp điện' ? 20000 : 10000),
-        priceDay: v.priceDay || (v.type === 'Xe đạp điện' ? 100000 : 50000),
-        priceWeek: v.priceWeek || (v.type === 'Xe đạp điện' ? 300000 : 150000)
-      }));
-    }
-    localStorage.setItem('vehicles_v4', JSON.stringify(mockVehicles));
-    return mockVehicles;
-  });
-
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [stations, setStations] = useState<Station[]>([]);
   const [filterStation, setFilterStation] = useState('');
 
+  const loadVehicles = async () => {
+    try {
+      const data = await vehicleService.getAll();
+      setVehicles(data);
+    } catch (error) {
+      console.error("Lỗi lấy danh sách xe", error);
+    }
+  };
+
   React.useEffect(() => {
     api.getStations().then(setStations);
+    loadVehicles();
   }, []);
 
   const [filterType, setFilterType] = useState('Tất cả loại xe');
@@ -58,32 +53,31 @@ const Vehicles: React.FC = () => {
 
   const closeModal = () => setIsModalOpen(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const finalData = { ...formData, priceSingle: Number(priceInput) * 60 };
-    let updatedVehicles;
-    if (editingId) {
-      updatedVehicles = vehicles.map(v => v.id === editingId ? { ...v, ...finalData } as Vehicle : v);
-    } else {
-      const newVehicle: Vehicle = {
-        ...(finalData as any),
-        id: 'v' + Date.now(),
-        rating: 5,
-        ownerName: 'VNGo Admin',
-        features: { 'Helmet': true }
-      };
-      updatedVehicles = [newVehicle, ...vehicles];
+    
+    try {
+      if (editingId) {
+        // await vehicleService.update(editingId, finalData); // Nếu Backend có logic Update Vehicle
+      } else {
+        await vehicleService.addVehicle(finalData);
+      }
+      loadVehicles();
+      closeModal();
+    } catch(err) {
+      alert("Có lỗi xảy ra khi lưu xe!");
     }
-    setVehicles(updatedVehicles);
-    localStorage.setItem('vehicles_v4', JSON.stringify(updatedVehicles));
-    closeModal();
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Bạn có chắc chắn muốn ẩn/ngừng hoạt động phương tiện này?')) {
-      const updatedVehicles = vehicles.filter(v => v.id !== id);
-      setVehicles(updatedVehicles);
-      localStorage.setItem('vehicles_v4', JSON.stringify(updatedVehicles));
+      try {
+         await vehicleService.delete(id);
+         loadVehicles();
+      } catch (err) {
+         alert("Không thể xoá xe");
+      }
     }
   };
 

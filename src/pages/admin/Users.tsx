@@ -1,79 +1,55 @@
 import React, { useState } from 'react';
-import { mockUsers } from '../../services/mockData';
+import { apiClient } from '../../services/apiClient';
 import type { User } from '../../types';
 import { Button } from '../../components/Button';
 import { Shield } from 'lucide-react';
 
 const Users: React.FC = () => {
-  const [users, setUsers] = useState<User[]>(() => {
-    const saved = localStorage.getItem('users');
-    if (saved) {
-      return JSON.parse(saved);
-    }
-    localStorage.setItem('users', JSON.stringify(mockUsers));
-    return mockUsers;
-  });
-
+  const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  React.useEffect(() => {
-    const handleUsersUpdate = () => {
-      const saved = localStorage.getItem('users');
-      if (saved) {
-        const parsedUsers = JSON.parse(saved);
-        setUsers(parsedUsers);
-        if (selectedUser) {
-           const updatedSelected = parsedUsers.find((u: User) => u.id === selectedUser.id);
-           if (updatedSelected) setSelectedUser(updatedSelected);
-        }
-      }
-    };
-    window.addEventListener('users-list-updated', handleUsersUpdate);
-    return () => window.removeEventListener('users-list-updated', handleUsersUpdate);
-  }, [selectedUser]);
-
-  const toggleStatus = (id: string) => {
-    const updatedUsers = users.map(u => {
-      if (u.id === id) {
-        const newStatus: User['status'] = u.status === 'ACTIVE' ? 'BANNED' : 'ACTIVE';
-        return { ...u, status: newStatus };
-      }
-      return u;
-    });
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-  };
-
-  const toggleRole = (id: string) => {
-    const updatedUsers = users.map(u => {
-      if (u.id === id) {
-        const newRole: User['role'] = u.role === 'ADMIN' ? 'USER' : 'ADMIN';
-        return { ...u, role: newRole };
-      }
-      return u;
-    });
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-  };
-  const handleDeleteUser = (id: string, name: string) => {
-    if (confirm(`Bạn có chắc chắn muốn xóa tài khoản "${name}" không?`)) {
-      const updatedUsers = users.filter(u => u.id !== id);
-      setUsers(updatedUsers);
-      localStorage.setItem('users', JSON.stringify(updatedUsers));
-      
-      const loggedIn = localStorage.getItem('user');
-      if (loggedIn) {
-        const parsed = JSON.parse(loggedIn);
-        if (parsed.id === id) {
-           localStorage.removeItem('user');
-           window.dispatchEvent(new Event('user-auth-change'));
-        }
-      }
+  const loadUsers = async () => {
+    try {
+      const { data } = await apiClient.get<User[]>('/user'); // API lấy danh sách user
+      setUsers(data);
+    } catch(err) {
+      console.error("Lỗi get users", err);
     }
   };
 
+  React.useEffect(() => {
+    loadUsers();
+  }, []);
 
+  const toggleStatus = async (id: string, currentStatus: string) => {
+      const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'; // Tùy chỉnh theo ENUM backend (nếu có BANNED thì truyền BANNED)
+      try {
+         await apiClient.patch(`/user/${id}/status?status=${newStatus}`);
+         loadUsers();
+      } catch (err) {
+         alert("Lỗi đổi trạng thái");
+      }
+  };
 
+  const toggleRole = async (id: string, currentRole: string) => {
+      const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN';
+      try {
+         await apiClient.patch(`/user/${id}/role?role=${newRole}`);
+         loadUsers();
+      } catch (err) {
+         alert("Lỗi đổi quyền");
+      }
+  };
+  const handleDeleteUser = async (id: string, name: string) => {
+    if (confirm(`Bạn có chắc chắn muốn xóa tài khoản "${name}" không?`)) {
+       try {
+         await apiClient.delete(`/user/${id}`);
+         loadUsers();
+       } catch (err) {
+         alert("Lỗi xóa tài khoản");
+       }
+    }
+  };
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -134,10 +110,10 @@ const Users: React.FC = () => {
                     <Button variant="secondary" size="sm" onClick={() => setSelectedUser(u)}>
                       Xem
                     </Button>
-                    <Button variant={u.role === 'ADMIN' ? 'danger' : 'primary'} size="sm" onClick={() => toggleRole(u.id)}>
+                    <Button variant={u.role === 'ADMIN' ? 'danger' : 'primary'} size="sm" onClick={() => toggleRole(u.id, u.role)}>
                       {u.role === 'ADMIN' ? 'Gỡ Admin' : 'Cấp Admin'}
                     </Button>
-                    <Button variant={u.status === 'ACTIVE' ? 'danger' : 'primary'} size="sm" onClick={() => toggleStatus(u.id)}>
+                    <Button variant={u.status === 'ACTIVE' ? 'danger' : 'primary'} size="sm" onClick={() => toggleStatus(u.id, u.status)}>
                       {u.status === 'ACTIVE' ? 'Khóa' : 'Mở khóa'}
                     </Button>
                     <button 

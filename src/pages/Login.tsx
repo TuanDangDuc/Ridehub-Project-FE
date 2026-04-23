@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { mockUsers } from '../services/mockData';
+import { authService } from '../services/auth';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import styles from './Auth.module.css';
@@ -17,63 +17,25 @@ const Login: React.FC = () => {
     setIsLoading(true);
     setError('');
     
-    // Simulate login
-    setTimeout(() => {
-      const saved = localStorage.getItem('users');
-      const usersList = saved ? JSON.parse(saved) : mockUsers;
-
-      let matchedUser = usersList.find((u: any) => u.email === email);
-      
-      if (!matchedUser && email === 'admin@vngo.vn' && password === '123') {
-         matchedUser = mockUsers.find((u: any) => u.role === 'ADMIN');
-      }
-
-      if (matchedUser) {
-        if (password !== '123' && matchedUser.role === 'ADMIN') {
-           setError('Email hoặc mật khẩu không chính xác');
-        } else if (matchedUser.status === 'BANNED' || matchedUser.status === 'LOCKED') {
-           setError('Tài khoản bị cấm!');
-        } else {
-           localStorage.setItem('user', JSON.stringify({ id: matchedUser.id, name: matchedUser.firstName + ' ' + matchedUser.lastName, role: matchedUser.role, email: matchedUser.email }));
-           window.dispatchEvent(new Event('user-auth-change'));
-           if (matchedUser.role === 'ADMIN') {
-             navigate('/admin');
-           } else {
-             navigate('/');
-           }
-        }
+    try {
+      const user = await authService.login(email, password);
+      if (user.role === 'ADMIN') {
+        navigate('/admin');
       } else {
-        // Mock simple login for testing if user doesn't exist but types email
-        if (email && password) {
-          const newUser = {
-             id: 'u' + Date.now(),
-             userName: email.split('@')[0],
-             email: email,
-             firstName: email.split('@')[0],
-             lastName: '',
-             avatarUrl: `https://i.pravatar.cc/150?u=${Date.now()}`,
-             role: 'USER',
-             status: 'ACTIVE'
-          };
-          const newUsersList = [...usersList, newUser];
-          localStorage.setItem('users', JSON.stringify(newUsersList));
-          
-          localStorage.setItem('user', JSON.stringify({ id: newUser.id, name: newUser.firstName, role: 'USER', email: email }));
-          window.dispatchEvent(new Event('user-auth-change'));
-          navigate('/');
-        } else {
-          setError('Email hoặc mật khẩu không chính xác');
-        }
+        navigate('/');
       }
+    } catch (err: any) {
+      setError(err.message || 'Email hoặc mật khẩu không chính xác');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
     <div className={styles.authContainer}>
       <div className={styles.authCard}>
-        <div className={styles.logo}>
-          TN<span>GO</span>Clone
+        <div className={styles.logo} style={{ fontSize: '2rem', fontWeight: 'bold' }}>
+          VN<span>GO</span>
         </div>
         <h2>Đăng nhập</h2>
         <p className={styles.subtitle}>Chào mừng bạn quay trở lại!</p>

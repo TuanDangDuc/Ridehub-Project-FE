@@ -13,6 +13,7 @@
     "@yudiel/react-qr-scanner": "^2.5.1",
     "axios": "^1.14.0",
     "chart.js": "^4.5.1",
+    "jwt-decode": "^4.0.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.7.0",
     "react": "^19.2.4",
