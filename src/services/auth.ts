@@ -1,49 +1,32 @@
-import { apiClient } from './apiClient';
-//import { jwtDecode } from 'jwt-decode';
+export const getToken = () => {
+  return localStorage.getItem('token');
+};
 
-export interface DecodedToken {
-  sub: string; // username
-  id?: string;
-  role?: string;
-  name?: string;
-  exp: number;
-}
+export const getUser = () => {
+  const user = localStorage.getItem('user');
+  return user ? JSON.parse(user) : null;
+};
 
-export const authService = {
-  login: async (username: string, password: string) => {
-    // API trả về chuỗi Token (String)
-    const { data } = await apiClient.post<string>('/user/login', { username, password });
-
-    if (data && !data.includes('failed')) {
-      localStorage.setItem('token', data);
-      try {
-        const decoded = jwtDecode<DecodedToken>(data);
-        const userData = {
-          id: decoded.sub,
-          email: decoded.sub,
-          name: decoded.name || decoded.sub,
-          role: decoded.role || 'USER'
-        };
-        localStorage.setItem('user', JSON.stringify(userData));
-        window.dispatchEvent(new Event('user-auth-change'));
-        return userData;
-      } catch (e) {
-        console.error("Invalid token format", e);
-        throw new Error("Lỗi định dạng xác thực");
-      }
-    } else {
-      throw new Error(data || "Đăng nhập thất bại");
-    }
-  },
-
-  register: async (registerData: any) => {
-    const { data } = await apiClient.post('/user/register', registerData);
-    return data;
-  },
-
-  logout: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.dispatchEvent(new Event('user-auth-change'));
+export const parseJwt = (token: string) => {
+  try {
+    return JSON.parse(atob(token));
+  } catch {
+    return null;
   }
+};
+
+export const isTokenExpired = () => {
+  const token = getToken();
+  if (!token) return true;
+
+  const decoded = parseJwt(token);
+  if (!decoded || !decoded.exp) return true;
+
+  const now = Date.now() / 1000;
+  return decoded.exp < now;
+};
+
+export const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
 };
