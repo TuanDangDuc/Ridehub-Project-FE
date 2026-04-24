@@ -1,107 +1,80 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { authService } from '../services/auth';
-import { Button } from '../components/Button';
-import { Input } from '../components/Input';
-import styles from './Auth.module.css';
+import { useNavigate } from 'react-router-dom';
+import './Login.css';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
-    
-    try {
-      // const user = await authService.login(email, password);
-      if (email === 'client' && password === 'ts123') {
-        navigate('/');
-        return;
-      }
-      else if (email === 'admin' && password === 'ts123') {
-        navigate('/admin');
-        return;
-      }
+  e.preventDefault();
+  setError('');
 
-       const user = await authService.login(email, password);
-      if (user.role === 'ADMIN') {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Email hoặc mật khẩu không chính xác');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const saved = localStorage.getItem('users');
+  const usersList = saved ? JSON.parse(saved) : [];
+
+  const foundUser = usersList.find((u: any) => u.email === email);
+
+  if (!foundUser) {
+    setError('Không tồn tại tài khoản');
+    return;
+  }
+
+  if (password !== '1234') {
+    setError('Sai mật khẩu');
+    return;
+  }
+
+  const fakeToken = btoa(
+  JSON.stringify({
+    exp: Math.floor(Date.now() / 1000) + 60 * 60, 
+    user: foundUser,
+  })
+);
+
+  localStorage.setItem('token', fakeToken);
+  localStorage.setItem('user', JSON.stringify(foundUser));
+
+  window.dispatchEvent(new Event('user-auth-change'));
+  
+  navigate('/admin');
+};
 
   return (
-    <div className={styles.authContainer}>
-      <div className={styles.authCard}>
-        <div className={styles.logo} style={{ fontSize: '2rem', fontWeight: 'bold' }}>
-          VN<span>GO</span>
-        </div>
+    <div className="login-container">
+      <form className="login-box" onSubmit={handleLogin}>
         <h2>Đăng nhập</h2>
-        <p className={styles.subtitle}>Chào mừng bạn quay trở lại!</p>
 
-        {error && <div className={styles.errorAlert}>{error}</div>}
+        <input
+          type="email"
+          placeholder="Nhập email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-        <form onSubmit={handleLogin} className={styles.form}>
-          <Input 
-            label="Email/Số điện thoại" 
-            placeholder="Nhập email hoặc SĐT" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            fullWidth
-            required
-          />
-          <Input 
-            label="Mật khẩu" 
-            type="password" 
-            placeholder="Nhập mật khẩu" 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            fullWidth
-            required
-          />
-          
-          <div className={styles.formActions}>
-            <label className={styles.remember}>
-              <input type="checkbox" /> Ghi nhớ đăng nhập
-            </label>
-            <Link to="/forgot-password" className={styles.forgotLink}>Quên mật khẩu?</Link>
-          </div>
+        <input
+          type="password"
+          placeholder="Nhập mật khẩu"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-          <Button type="submit" fullWidth size="lg" isLoading={isLoading}>
-            Đăng nhập
-          </Button>
-        </form>
+        <button type="submit">Đăng nhập</button>
+        <p style={{ marginTop: '12px', fontSize: '14px' }}>
+  Chưa có tài khoản?{' '}
+  <span
+    style={{ color: '#2f80ed', cursor: 'pointer', fontWeight: 500 }}
+    onClick={() => navigate('/register')}
+  >
+    Đăng ký
+  </span>
+</p>
 
-        <div className={styles.divider}>
-          <span>Hoặc đăng nhập với</span>
-        </div>
-
-        <div className={styles.socialAuth}>
-          <button className={styles.socialBtn}>
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" width="20" />
-            Google
-          </button>
-          <button className={styles.socialBtn}>
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="Github" width="20" />
-            Github
-          </button>
-        </div>
-
-        <p className={styles.switchAuth}>
-          Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
-        </p>
-      </div>
+        {error && <p className="error">{error}</p>}
+      </form>
     </div>
   );
 };

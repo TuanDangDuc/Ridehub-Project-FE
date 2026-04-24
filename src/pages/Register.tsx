@@ -1,76 +1,111 @@
 import React, { useState } from 'react';
-import { authService } from '../services/auth';
-
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '../components/Button';
-import { Input } from '../components/Input';
-import styles from './Auth.module.css';
+import { useNavigate } from 'react-router-dom';
+import './Login.css';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
 
-    try {
-      await authService.register({
-        username: email.split('@')[0],
-        email: email,
-        password: password,
-        firstName: firstName,
-        lastName: lastName,
-        phone: phone,
-      });
-
-      // Redirect sau 1 giây báo thành công
-      setTimeout(() => {
-        setIsLoading(false);
-        navigate('/login');
-      }, 1000);
-    } catch (err: any) {
-      setIsLoading(false);
-      setError(err.message || 'Đăng ký thất bại, email có thể đã được sử dụng!');
+    if (password !== confirmPassword) {
+      setError('Mật khẩu không khớp');
+      return;
     }
+
+    const saved = localStorage.getItem('users');
+const usersList = saved ? JSON.parse(saved) : [];
+
+if (usersList.some((u: any) => u.email === email)) {
+  setError('Email đã tồn tại');
+  return;
+}
+
+const newUser = {
+  id: 'u' + Date.now(),
+  email,
+  firstName,
+  lastName,
+  phone,
+  role: 'USER',
+  avatarUrl: `https://i.pravatar.cc/150?u=${email}`
+};
+
+localStorage.setItem('users', JSON.stringify([...usersList, newUser]));
+
+navigate('/login');
   };
 
   return (
-    <div className={styles.authContainer}>
-      <div className={styles.authCard}>
-        <div className={styles.logo} style={{ fontSize: '2rem', fontWeight: 'bold' }}>
-          VN<span>GO</span>
-        </div>
-        <h2>Đăng ký tài khoản</h2>
-        <p className={styles.subtitle}>Mở khóa hành trình của bạn</p>
+    <div className="login-container">
+      <form className="login-box" onSubmit={handleRegister}>
+        <h2>Đăng ký</h2>
 
-        {error && <div className={styles.errorAlert}>{error}</div>}
+        <input
+          placeholder="Họ"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+        />
 
-        <form onSubmit={handleRegister} className={styles.form}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <Input label="Họ" placeholder="VD: Nguyễn" value={lastName} onChange={e => setLastName(e.target.value)} fullWidth required />
-            <Input label="Tên" placeholder="VD: Văn A" value={firstName} onChange={e => setFirstName(e.target.value)} fullWidth required />
-          </div>
-          <Input label="Email" type="email" placeholder="example@gmail.com" value={email} onChange={e => setEmail(e.target.value)} fullWidth required />
-          <Input label="Số điện thoại" type="tel" placeholder="090 123 4567" value={phone} onChange={e => setPhone(e.target.value)} fullWidth required />
-          <Input label="Mật khẩu" type="password" placeholder="Tạo mật khẩu" value={password} onChange={e => setPassword(e.target.value)} fullWidth required />
-          
-          <Button type="submit" fullWidth size="lg" isLoading={isLoading} className="mt-4">
-            Đăng ký
-          </Button>
-        </form>
+        <input
+          placeholder="Tên"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+        />
 
-        <p className={`${styles.switchAuth} mt-4`}>
-          Đã có tài khoản? <Link to="/login">Đăng nhập ngay</Link>
+        <input
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <input
+          placeholder="Số điện thoại"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+
+        <input
+          type="password"
+          placeholder="Mật khẩu"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <input
+          type="password"
+          placeholder="Nhập lại mật khẩu"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        />
+
+        <button type="submit">Đăng ký</button>
+
+        {error && <p className="error">{error}</p>}
+
+        <p style={{ marginTop: '12px', fontSize: '14px', textAlign: 'center' }}>
+          Đã có tài khoản?{' '}
+          <span
+            style={{
+              color: '#2f80ed',
+              cursor: 'pointer',
+              fontWeight: 600
+            }}
+            onClick={() => navigate('/login')}
+          >
+            Đăng nhập
+          </span>
         </p>
-      </div>
+      </form>
     </div>
   );
 };

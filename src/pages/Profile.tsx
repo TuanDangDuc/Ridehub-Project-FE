@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import { api } from '../services/api';
 
 const Profile: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
@@ -11,21 +10,22 @@ const Profile: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('user');
-    if (saved) {
-      const u = JSON.parse(saved);
-      const nameParts = u.name ? u.name.split(' ') : [];
-      setFormData({
-        firstName: nameParts.slice(0, -1).join(' ') || '',
-        lastName: nameParts[nameParts.length - 1] || u.name || '',
-        email: u.email || '',
-        phone: u.phone || ''
-      });
-      if (u.avatarUrl) {
-        setAvatarSrc(u.avatarUrl);
-      }
+  const saved = localStorage.getItem('user');
+  if (saved) {
+    const u = JSON.parse(saved);
+
+    setFormData({
+      firstName: u.firstName || '',
+      lastName: u.lastName || '',
+      email: u.email || '',
+      phone: u.phone || ''
+    });
+
+    if (u.avatarUrl) {
+      setAvatarSrc(u.avatarUrl);
     }
-  }, []);
+  }
+}, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -43,9 +43,26 @@ const Profile: React.FC = () => {
     setIsSaving(true);
     setSuccess('');
     try {
-      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
-      await api.updateUserProfile('currentUser', { name: fullName, email: formData.email, phone: formData.phone, avatarUrl: avatarSrc } as any);
-      
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+const updatedUser = {
+  ...currentUser,
+  firstName: formData.firstName,
+  lastName: formData.lastName,
+  email: formData.email,
+  phone: formData.phone,
+  avatarUrl: avatarSrc,
+};
+
+localStorage.setItem('user', JSON.stringify(updatedUser));
+
+const users = JSON.parse(localStorage.getItem('users') || '[]');
+
+const updatedUsers = users.map((u: any) =>
+  u.id === currentUser.id ? updatedUser : u
+);
+
+localStorage.setItem('users', JSON.stringify(updatedUsers));
       setSuccess('Cập nhật hồ sơ thành công!');
       setTimeout(() => setSuccess(''), 3000);
     } catch {
