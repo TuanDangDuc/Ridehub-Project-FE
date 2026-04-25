@@ -7,7 +7,7 @@ import styles from './Auth.module.css';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -18,17 +18,7 @@ const Login: React.FC = () => {
     setError('');
     
     try {
-      // const user = await authService.login(email, password);
-      if (email === 'client' && password === 'ts123') {
-        navigate('/');
-        return;
-      }
-      else if (email === 'admin' && password === 'ts123') {
-        navigate('/admin');
-        return;
-      }
-
-       const user = await authService.login(email, password);
+      const user = await authService.login(identifier, password);
       if (user.role === 'ADMIN') {
         navigate('/admin');
       } else {
@@ -56,8 +46,8 @@ const Login: React.FC = () => {
           <Input 
             label="Email/Số điện thoại" 
             placeholder="Nhập email hoặc SĐT" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             fullWidth
             required
           />

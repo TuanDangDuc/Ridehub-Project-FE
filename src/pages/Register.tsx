@@ -22,13 +22,16 @@ const Register: React.FC = () => {
     setError('');
 
     try {
+      const fullName = [lastName, firstName].filter(Boolean).join(' ').trim();
+      const usernameToSave = fullName || email.split('@')[0];
+
       await authService.register({
-        username: email.split('@')[0],
-        email: email,
-        password: password,
-        firstName: firstName,
-        lastName: lastName,
-        phone: phone,
+        username: usernameToSave,
+        email,
+        password,
+        firstName,
+        lastName,
+        phone,
       });
 
       // Redirect sau 1 giây báo thành công

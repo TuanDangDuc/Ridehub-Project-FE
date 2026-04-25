@@ -1,3 +1,4 @@
+
 import { apiClient } from './apiClient';
 import { jwtDecode } from 'jwt-decode';
 
@@ -47,3 +48,4 @@ export const authService = {
     window.dispatchEvent(new Event('user-auth-change'));
   }
 };
+
