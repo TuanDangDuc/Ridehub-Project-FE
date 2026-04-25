@@ -1,31 +1,74 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
+import { api } from '../services/api';
 
 const Profile: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState('');
-  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', phone: '' });
+  const [formData, setFormData] = useState({
+    id: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    identityNumber: '',
+    dateOfBirth: '',
+    sex: ''
+  });
   const [avatarSrc, setAvatarSrc] = useState('https://i.pravatar.cc/150?u=u1');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-  const saved = localStorage.getItem('user');
-  if (saved) {
-    const u = JSON.parse(saved);
+    const loadProfile = async () => {
+      const saved = localStorage.getItem('user');
+      if (!saved) {
+        return;
+      }
 
-    setFormData({
-      firstName: u.firstName || '',
-      lastName: u.lastName || '',
-      email: u.email || '',
-      phone: u.phone || ''
-    });
+      const u = JSON.parse(saved);
+      const userId = u.id || '';
+      const nameParts = u.name ? u.name.split(' ') : [];
+      const fallbackData = {
+        id: userId,
+        firstName: u.firstName || nameParts.slice(0, -1).join(' ') || '',
+        lastName: u.lastName || nameParts[nameParts.length - 1] || u.name || '',
+        email: u.email || '',
+        phone: u.phone || u.phone_number || '',
+        identityNumber: u.identityNumber || u.identity_number || '',
+        dateOfBirth: u.dateOfBirth || u.date_of_birth || '',
+        sex: u.sex || ''
+      };
 
-    if (u.avatarUrl) {
-      setAvatarSrc(u.avatarUrl);
-    }
-  }
-}, []);
+      setFormData(fallbackData);
+      if (u.avatarUrl) {
+        setAvatarSrc(u.avatarUrl);
+      }
+
+      if (!userId) {
+        return;
+      }
+
+      const profileFromApi = await api.getUserProfile(userId);
+      if (profileFromApi) {
+        setFormData({
+          id: profileFromApi.id,
+          firstName: profileFromApi.firstName || '',
+          lastName: profileFromApi.lastName || '',
+          email: profileFromApi.email || '',
+          phone: profileFromApi.phone || '',
+          identityNumber: profileFromApi.identityNumber || '',
+          dateOfBirth: profileFromApi.dateOfBirth || '',
+          sex: profileFromApi.sex || ''
+        });
+        if (profileFromApi.avatarUrl) {
+          setAvatarSrc(profileFromApi.avatarUrl);
+        }
+      }
+    };
+
+    loadProfile();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -43,30 +86,27 @@ const Profile: React.FC = () => {
     setIsSaving(true);
     setSuccess('');
     try {
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+      await api.updateUserProfile(formData.id, {
+        name: fullName,
+        email: formData.email,
+        phone: formData.phone,
+        avatarUrl: avatarSrc,
+        identityNumber: formData.identityNumber,
+        dateOfBirth: formData.dateOfBirth,
+        sex: formData.sex
+      } as any);
 
-const updatedUser = {
-  ...currentUser,
-  firstName: formData.firstName,
-  lastName: formData.lastName,
-  email: formData.email,
-  phone: formData.phone,
-  avatarUrl: avatarSrc,
-};
+      const updatedUser = await api.getUserProfile(formData.id);
+      if (updatedUser) {
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        window.dispatchEvent(new Event('user-auth-change'));
+      }
 
-localStorage.setItem('user', JSON.stringify(updatedUser));
-
-const users = JSON.parse(localStorage.getItem('users') || '[]');
-
-const updatedUsers = users.map((u: any) =>
-  u.id === currentUser.id ? updatedUser : u
-);
-
-localStorage.setItem('users', JSON.stringify(updatedUsers));
       setSuccess('Cập nhật hồ sơ thành công!');
       setTimeout(() => setSuccess(''), 3000);
     } catch {
-      // Handle error
+      setSuccess('Cập nhật không thành công, vui lòng thử lại.');
     } finally {
       setIsSaving(false);
     }
@@ -95,6 +135,9 @@ localStorage.setItem('users', JSON.stringify(updatedUsers));
           </div>
           <Input label="Email" type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} fullWidth />
           <Input label="Số điện thoại" type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} fullWidth />
+          <Input label="Số CMND/CCCD" value={formData.identityNumber} onChange={e => setFormData({...formData, identityNumber: e.target.value})} fullWidth />
+          <Input label="Ngày sinh" type="date" value={formData.dateOfBirth} onChange={e => setFormData({...formData, dateOfBirth: e.target.value})} fullWidth />
+          <Input label="Giới tính" value={formData.sex} onChange={e => setFormData({...formData, sex: e.target.value})} fullWidth />
           
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
             <Button type="submit" isLoading={isSaving}>Lưu thay đổi</Button>
