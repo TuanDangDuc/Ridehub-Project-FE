@@ -7,7 +7,7 @@ import styles from './Auth.module.css';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [identifier, setIdentifier] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -18,14 +18,18 @@ const Login: React.FC = () => {
     setError('');
     
     try {
-      const user = await authService.login(identifier, password);
+      const user = await authService.login(username, password);
       if (user.role === 'ADMIN') {
         navigate('/admin');
       } else {
         navigate('/');
       }
-    } catch (err: any) {
-      setError(err.message || 'Email hoặc mật khẩu không chính xác');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'Tên đăng nhập hoặc mật khẩu không chính xác');
+      } else {
+        setError('Tên đăng nhập hoặc mật khẩu không chính xác');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -44,10 +48,10 @@ const Login: React.FC = () => {
 
         <form onSubmit={handleLogin} className={styles.form}>
           <Input 
-            label="Email/Số điện thoại" 
-            placeholder="Nhập email hoặc SĐT" 
-            value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
+            label="Tên đăng nhập" 
+            placeholder="Nhập tên đăng nhập" 
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             fullWidth
             required
           />

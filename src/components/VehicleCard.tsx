@@ -17,7 +17,11 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
   return (
     <div className={styles.card}>
       <div className={styles.imageContainer}>
-        <img src={vehicle.images[0]} alt={vehicle.name} className={styles.image} />
+        <img
+          src={vehicle.images && vehicle.images.length > 0 ? vehicle.images[0] : '/public/images/default-vehicle.png'}
+          alt={vehicle.name}
+          className={styles.image}
+        />
         <div className={styles.statusBadge} data-status={vehicle.status}>
           {vehicle.status === 'AVAILABLE' ? 'Sẵn sàng' : vehicle.status === 'RENTED' ? 'Đang thuê' : 'Bảo trì'}
         </div>
