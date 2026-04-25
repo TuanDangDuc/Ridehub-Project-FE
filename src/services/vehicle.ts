@@ -12,6 +12,11 @@ export const vehicleService = {
     return data;
   },
 
+  getByCode: async (code: string): Promise<Vehicle> => {
+    const { data } = await apiClient.get<Vehicle>(`/vehicle/code/${code}`);
+    return data;
+  },
+
   addVehicle: async (payload: any) => {
     const { data } = await apiClient.post('/vehicle', payload);
     return data;

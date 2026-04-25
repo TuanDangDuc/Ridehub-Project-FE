@@ -34,18 +34,38 @@ export const ScannerModal: React.FC<ScannerModalProps> = ({ isOpen, onClose }) =
       const userId = (parsedUser && parsedUser.id) ? parsedUser.id : 'u1';
       
 
+      let vehicle;
+      
+      // Check if the code is a UUID (typically from QR scan)
+      const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(code.trim());
+      
+      if (isUUID) {
+        vehicle = await api.getVehicleById(code.trim());
+      } else {
+        vehicle = await api.getVehicleByCode(code.trim());
+      }
+
+      if (!vehicle) {
+        throw new Error('Mã xe không tồn tại. Vui lòng kiểm tra lại.');
+      }
+      if (vehicle.status !== 'AVAILABLE') {
+        throw new Error('Xe này hiện đang không sẵn sàng (hoặc đã được thuê).');
+      }
+
       const stations = await api.getStations();
       const pricings = await api.getPricings();
       
       const startStationId = stations.length > 0 ? stations[0].id : undefined;
       const pricingId = pricings.length > 0 ? pricings[0].id : undefined;
 
+      // Delegate the transaction to backend
       await api.createTrip({
         userId,
-        vehicleId: code,
+        vehicleId: vehicle.id, // Ensure we use proper ID
         startStationId,
         pricingId
       });
+
       
       onClose();
       window.dispatchEvent(new Event('trip-updated'));

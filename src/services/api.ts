@@ -4,12 +4,28 @@ import type { User, Vehicle, Station, Trip, Review, DashboardStats } from '../ty
 export const api = {
   // Vehicles
   getVehicles: async (): Promise<Vehicle[]> => {
-    const { data } = await apiClient.get<Vehicle[]>('/vehicle');
-    return data;
+    try {
+      const { data } = await apiClient.get<Vehicle[]>('/vehicle');
+      return Array.isArray(data) ? data : [];
+    } catch {
+      return [];
+    }
   },
   getVehicleById: async (id: string): Promise<Vehicle | undefined> => {
-    const { data } = await apiClient.get<Vehicle>(`/vehicle/${id}`);
-    return data;
+    try {
+      const { data } = await apiClient.get<Vehicle>(`/vehicle/${id}`);
+      return data;
+    } catch {
+      return undefined;
+    }
+  },
+  getVehicleByCode: async (code: string): Promise<Vehicle | undefined> => {
+    try {
+      const { data } = await apiClient.get<Vehicle>(`/vehicle/code/${code}`);
+      return data;
+    } catch {
+      return undefined;
+    }
   },
 
   // Stations
@@ -53,6 +69,15 @@ export const api = {
       return data;
     } catch {
       return [];
+    }
+  },
+
+  getTripById: async (tripId: string): Promise<Trip | undefined> => {
+    try {
+      const { data } = await apiClient.get<Trip>(`/trip/${tripId}`);
+      return data;
+    } catch {
+      return undefined;
     }
   },
 

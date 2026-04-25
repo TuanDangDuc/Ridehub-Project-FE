@@ -6,7 +6,7 @@ import { ScannerModal } from './ScannerModal';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{name: string, role: string, avatarUrl?: string} | null>(null);
+  const [user, setUser] = useState<{ name: string, role: string, avatarUrl?: string } | null>(null);
   const [balance, setBalance] = useState<number>(0);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
@@ -20,25 +20,25 @@ const Header: React.FC = () => {
       const storedUser = localStorage.getItem('user');
       const user = storedUser ? JSON.parse(storedUser) : null;
       if (!user) {
-         setBalance(0);
-         return;
+        setBalance(0);
+        return;
       }
       const userId = user.id || 'u1';
-      
+
       // Auto-migrate if they have legacy balance stuck in 'undefined'
       const legacyBalance = localStorage.getItem('vngo_wallet_balance_undefined');
       if (legacyBalance) {
         localStorage.setItem(`vngo_wallet_balance_${userId}`, legacyBalance);
         localStorage.removeItem('vngo_wallet_balance_undefined');
       }
-      
+
       const storedBalance = localStorage.getItem(`vngo_wallet_balance_${userId}`);
       setBalance(storedBalance ? parseInt(storedBalance, 10) : 0);
     };
 
     checkUser();
     checkBalance();
-    
+
     // Listen for storage events (e.g. from other tabs or Wallet page)
     const handleStorageChange = () => {
       checkUser();
@@ -74,18 +74,18 @@ const Header: React.FC = () => {
           <Link to="/" className={styles.logo} style={{ marginRight: 0 }}>
             VN<span>GO</span>
           </Link>
-          <button 
+          <button
             onClick={() => setIsScannerOpen(true)}
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.4rem', 
-              background: 'var(--color-primary)', 
-              color: 'white', 
-              border: 'none', 
-              padding: '0.4rem 0.75rem', 
-              borderRadius: '8px', 
-              cursor: 'pointer', 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              background: 'var(--color-primary)',
+              color: 'white',
+              border: 'none',
+              padding: '0.4rem 0.75rem',
+              borderRadius: '8px',
+              cursor: 'pointer',
               fontWeight: 600,
               fontSize: '0.9rem'
             }}
@@ -95,7 +95,7 @@ const Header: React.FC = () => {
             Quét để thuê xe
           </button>
         </div>
-        
+
         <nav className={styles.nav}>
           <Link to="/how-to-use" className={styles.navLink}>Hướng dẫn sử dụng</Link>
           <Link to="/vehicles" className={styles.navLink}>Danh sách xe</Link>
@@ -103,7 +103,7 @@ const Header: React.FC = () => {
           <Link to="/my-bookings" className={styles.navLink}>Xe đã thuê</Link>
           <Link to="/about" className={styles.navLink}>Về chúng tôi</Link>
         </nav>
-        
+
         <div className={styles.actions}>
           {user ? (
             <div className={styles.userMenu}>
@@ -119,7 +119,7 @@ const Header: React.FC = () => {
                   )}
                 </div>
               </Link>
-              
+
               <div className={styles.dropdown}>
                 <Link to="/profile" className={styles.dropdownItem}>Hồ sơ của tôi</Link>
                 <Link to="/wallet" className={styles.dropdownItem}>Nạp tiền</Link>
@@ -140,7 +140,7 @@ const Header: React.FC = () => {
           )}
         </div>
       </div>
-      
+
       <ScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} />
     </header>
   );

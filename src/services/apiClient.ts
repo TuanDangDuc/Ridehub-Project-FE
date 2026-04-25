@@ -1,11 +1,12 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || '/api';
+const baseURL = "https://api.anhchuno.id.vn/api";
 
 export const apiClient = axios.create({
   baseURL,
   headers: {
     'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest'
   },
 });
 
@@ -24,7 +25,13 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // If the backend returns HTML (e.g. login redirect) instead of JSON, reject it
+    if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
+      return Promise.reject(new Error("Received HTML instead of JSON"));
+    }
+    return response;
+  },
   (error) => {
     // Xử lý lỗi chung tại đây (ví dụ: logout nếu 401)
     if (error.response?.status === 401) {
