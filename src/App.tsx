@@ -17,6 +17,8 @@ import Overview from './pages/admin/Overview';
 import Users from './pages/admin/Users';
 import Vehicles from './pages/admin/Vehicles';
 import AdminStations from './pages/admin/AdminStations';
+import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
+import AdminRoute from './components/AdminRoute';
 
 function App() {
   return (
@@ -31,6 +33,8 @@ function App() {
           <Route path="how-to-use" element={<HowToUse />} />
           <Route path="forgot-password" element={<div className="container mt-8">Quên mật khẩu (Flow)</div>} />
           
+          <Route path="oauth2/redirect" element={<OAuth2RedirectHandler />} />
+          
           <Route path="vehicles" element={<VehicleList />} />
           <Route path="vehicles/:id" element={<VehicleDetail />} />
           <Route path="book/:id" element={<Booking />} />
@@ -42,11 +46,13 @@ function App() {
         </Route>
 
         {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Overview />} />
-          <Route path="users" element={<Users />} />
-          <Route path="vehicles" element={<Vehicles />} />
-          <Route path="stations" element={<AdminStations />} />
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Overview />} />
+            <Route path="users" element={<Users />} />
+            <Route path="vehicles" element={<Vehicles />} />
+            <Route path="stations" element={<AdminStations />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

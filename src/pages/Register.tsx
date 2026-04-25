@@ -9,10 +9,8 @@ import styles from './Auth.module.css';
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
@@ -22,16 +20,10 @@ const Register: React.FC = () => {
     setError('');
 
     try {
-      const fullName = [lastName, firstName].filter(Boolean).join(' ').trim();
-      const usernameToSave = fullName || email.split('@')[0];
-
       await authService.register({
-        username: usernameToSave,
-        email,
+        username,
         password,
-        firstName,
-        lastName,
-        phone,
+        email,
       });
 
       // Redirect sau 1 giây báo thành công
@@ -57,12 +49,8 @@ const Register: React.FC = () => {
         {error && <div className={styles.errorAlert}>{error}</div>}
 
         <form onSubmit={handleRegister} className={styles.form}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <Input label="Họ" placeholder="VD: Nguyễn" value={lastName} onChange={e => setLastName(e.target.value)} fullWidth required />
-            <Input label="Tên" placeholder="VD: Văn A" value={firstName} onChange={e => setFirstName(e.target.value)} fullWidth required />
-          </div>
+          <Input label="Tên đăng nhập (Username)" placeholder="VD: minhanh123" value={username} onChange={e => setUsername(e.target.value)} fullWidth required />
           <Input label="Email" type="email" placeholder="example@gmail.com" value={email} onChange={e => setEmail(e.target.value)} fullWidth required />
-          <Input label="Số điện thoại" type="tel" placeholder="090 123 4567" value={phone} onChange={e => setPhone(e.target.value)} fullWidth required />
           <Input label="Mật khẩu" type="password" placeholder="Tạo mật khẩu" value={password} onChange={e => setPassword(e.target.value)} fullWidth required />
           
           <Button type="submit" fullWidth size="lg" isLoading={isLoading} className="mt-4">
