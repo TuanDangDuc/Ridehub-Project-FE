@@ -31,10 +31,10 @@ const Profile: React.FC = () => {
       const nameParts = u.name ? u.name.split(' ') : [];
       const fallbackData = {
         id: userId,
-        firstName: u.firstName || nameParts.slice(0, -1).join(' ') || '',
-        lastName: u.lastName || nameParts[nameParts.length - 1] || u.name || '',
+        firstName: u.firstname || u.firstName || nameParts.slice(0, -1).join(' ') || '',
+        lastName: u.lastname || u.lastName || nameParts[nameParts.length - 1] || u.name || '',
         email: u.email || '',
-        phone: u.phone || u.phone_number || '',
+        phone: u.phoneNumber || u.phone || u.phone_number || '',
         identityNumber: u.identityNumber || u.identity_number || '',
         dateOfBirth: u.dateOfBirth || u.date_of_birth || '',
         sex: u.sex || ''
@@ -53,10 +53,10 @@ const Profile: React.FC = () => {
       if (profileFromApi) {
         setFormData({
           id: profileFromApi.id,
-          firstName: profileFromApi.firstName || '',
-          lastName: profileFromApi.lastName || '',
+          firstName: profileFromApi.firstname || '',
+          lastName: profileFromApi.lastname || '',
           email: profileFromApi.email || '',
-          phone: profileFromApi.phone || '',
+          phone: profileFromApi.phoneNumber || '',
           identityNumber: profileFromApi.identityNumber || '',
           dateOfBirth: profileFromApi.dateOfBirth || '',
           sex: profileFromApi.sex || ''
@@ -86,11 +86,11 @@ const Profile: React.FC = () => {
     setIsSaving(true);
     setSuccess('');
     try {
-      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
       await api.updateUserProfile(formData.id, {
-        name: fullName,
+        firstname: formData.firstName,
+        lastname: formData.lastName,
         email: formData.email,
-        phone: formData.phone,
+        phoneNumber: formData.phone,
         avatarUrl: avatarSrc,
         identityNumber: formData.identityNumber,
         dateOfBirth: formData.dateOfBirth,

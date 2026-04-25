@@ -9,7 +9,14 @@ export const apiClient = axios.create({
   },
 });
 
-// Thêm Interceptor để tự động gắn token nếu có
+export const publicApiClient = axios.create({
+  baseURL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Thêm Interceptor để tự động gắn token nếu có cho các request cần xác thực
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');

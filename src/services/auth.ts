@@ -1,4 +1,4 @@
-import { apiClient } from "./apiClient";
+import { apiClient, publicApiClient } from "./apiClient";
 import { jwtDecode } from "jwt-decode";
 
 export interface DecodedToken {
@@ -21,7 +21,7 @@ export interface UserInfo {
 export const authService = {
   login: async (username: string, password: string) => {
     // API trả về chuỗi Token (String)
-    const { data } = await apiClient.post<string>("/user/login", {
+    const { data } = await publicApiClient.post<string>("/user/login", {
       username,
       password,
     });
@@ -46,9 +46,8 @@ export const authService = {
 
       // Gọi API lấy thông tin user
       try {
-        const userResponse = await apiClient.get<UserInfo>("/user/username");
+        const userResponse = await apiClient.get<UserInfo>(`/user/info/${username}`);
         const userData: UserInfo = userResponse.data;
-        console.log("User info from API:", userData);
         // Lưu thông tin user vào localStorage
         localStorage.setItem("user", JSON.stringify(userData));
         window.dispatchEvent(new Event("user-auth-change"));
@@ -71,7 +70,8 @@ export const authService = {
   },
 
   register: async (registerData: Record<string, unknown>) => {
-    const { data } = await apiClient.post("/user/register", registerData);
+    const { data } = await publicApiClient.post("/user/register", registerData);
+    console.log("Register response:", data);
     return data;
   },
 
