@@ -81,12 +81,6 @@ export const api = {
     }
   },
 
-  createBooking: async (tripData: Partial<Trip>): Promise<Trip> => {
-    // Assuming backend endpoint to create a trip mapping
-    const { data } = await apiClient.post<Trip>('/trip', tripData);
-    return data;
-  },
-
   createTrip: async (payload: {
     userId: string;
     vehicleId: string;

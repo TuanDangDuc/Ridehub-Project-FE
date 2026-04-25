@@ -1,0 +1,187 @@
+﻿commit 4aa46bc60ec3f0413f76abada8ee09c90bb83a9c
+Author: tuongramos <tuongramos4@gmail.com>
+Date:   Sat Apr 25 12:25:18 2026 +0700
+
+     basic
+
+diff --git a/src/components/ScannerModal.tsx b/src/components/ScannerModal.tsx
+index 2fb7580..681da7a 100644
+--- a/src/components/ScannerModal.tsx
++++ b/src/components/ScannerModal.tsx
+@@ -34,18 +34,38 @@ export const ScannerModal: React.FC<ScannerModalProps> = ({ isOpen, onClose }) =
+       const userId = (parsedUser && parsedUser.id) ? parsedUser.id : 'u1';
+       
+ 
++      let vehicle;
++      
++      // Check if the code is a UUID (typically from QR scan)
++      const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(code.trim());
++      
++      if (isUUID) {
++        vehicle = await api.getVehicleById(code.trim());
++      } else {
++        vehicle = await api.getVehicleByCode(code.trim());
++      }
++
++      if (!vehicle) {
++        throw new Error('M├ú xe kh├┤ng tß╗ôn tß║íi. Vui l├▓ng kiß╗âm tra lß║íi.');
++      }
++      if (vehicle.status !== 'AVAILABLE') {
++        throw new Error('Xe n├áy hiß╗çn ─æang kh├┤ng sß║╡n s├áng (hoß║╖c ─æ├ú ─æ╞░ß╗úc thu├¬).');
++      }
++
+       const stations = await api.getStations();
+       const pricings = await api.getPricings();
+       
+       const startStationId = stations.length > 0 ? stations[0].id : undefined;
+       const pricingId = pricings.length > 0 ? pricings[0].id : undefined;
+ 
++      // Delegate the transaction to backend
+       await api.createTrip({
+         userId,
+-        vehicleId: code,
++        vehicleId: vehicle.id, // Ensure we use proper ID
+         startStationId,
+         pricingId
+       });
++
+       
+       onClose();
+       window.dispatchEvent(new Event('trip-updated'));
+diff --git a/src/services/api.ts b/src/services/api.ts
+index 1536339..2084f66 100644
+--- a/src/services/api.ts
++++ b/src/services/api.ts
+@@ -4,12 +4,28 @@ import type { User, Vehicle, Station, Trip, Review, DashboardStats } from '../ty
+ export const api = {
+   // Vehicles
+   getVehicles: async (): Promise<Vehicle[]> => {
+-    const { data } = await apiClient.get<Vehicle[]>('/vehicle');
+-    return data;
++    try {
++      const { data } = await apiClient.get<Vehicle[]>('/vehicle');
++      return Array.isArray(data) ? data : [];
++    } catch {
++      return [];
++    }
+   },
+   getVehicleById: async (id: string): Promise<Vehicle | undefined> => {
+-    const { data } = await apiClient.get<Vehicle>(`/vehicle/${id}`);
+-    return data;
++    try {
++      const { data } = await apiClient.get<Vehicle>(`/vehicle/${id}`);
++      return data;
++    } catch {
++      return undefined;
++    }
++  },
++  getVehicleByCode: async (code: string): Promise<Vehicle | undefined> => {
++    try {
++      const { data } = await apiClient.get<Vehicle>(`/vehicle/code/${code}`);
++      return data;
++    } catch {
++      return undefined;
++    }
+   },
+ 
+   // Stations
+@@ -56,6 +72,15 @@ export const api = {
+     }
+   },
+ 
++  getTripById: async (tripId: string): Promise<Trip | undefined> => {
++    try {
++      const { data } = await apiClient.get<Trip>(`/trip/${tripId}`);
++      return data;
++    } catch {
++      return undefined;
++    }
++  },
++
+   createBooking: async (tripData: Partial<Trip>): Promise<Trip> => {
+     // Assuming backend endpoint to create a trip mapping
+     const { data } = await apiClient.post<Trip>('/trip', tripData);
+diff --git a/src/services/auth.ts b/src/services/auth.ts
+index e735d0c..272eadb 100644
+--- a/src/services/auth.ts
++++ b/src/services/auth.ts
+@@ -1,5 +1,5 @@
+ import { apiClient } from './apiClient';
+-//import { jwtDecode } from 'jwt-decode';
++import { jwtDecode } from 'jwt-decode';
+ 
+ export interface DecodedToken {
+   sub: string; // username
+diff --git a/src/services/bookingFlow.ts b/src/services/bookingFlow.ts
+index eb86ebf..9ea580e 100644
+--- a/src/services/bookingFlow.ts
++++ b/src/services/bookingFlow.ts
+@@ -1,27 +1,23 @@
+ import { api } from './api';
+-import { vehicleService } from './vehicle';
+ 
+ export const bookingFlow = {
+   /**
+    * Gß╗ìi khi ng╞░ß╗¥i d├╣ng nhß║¡p m├ú Code hoß║╖c qu├⌐t m├ú QR th├ánh c├┤ng v├á chß╗æt ─æß║╖t xe.
+-   * Chß║íy luß╗ông: createTrip -> updateVehicleStatus(IN_USE)
++   * Chß║íy luß╗ông: createTrip (Backend sß║╜ tß╗▒ ─æß╗Öng chuyß╗ân trß║íng th├íi xe sang IN_USE)
+    */
+   handleBookVehicle: async (payload: {
+     userId: string;
+     vehicleId: string;
+-    startStationId: string;
+-    endStationId: string;
+-    pricingId: string;
++    startStationId?: string;
++    endStationId?: string;
++    pricingId?: string;
+     latitude?: number;
+     longitude?: number;
+   }) => {
+     try {
+-      // 1. Khß╗ƒi tß║ío chuyß║┐n ─æi (Bß║»t ─æß║ºu t├¡nh giß╗¥/t├¡nh ph├¡)
++      // 1. Khß╗ƒi tß║ío chuyß║┐n ─æi (Backend tß╗▒ t├¡nh giß╗¥/t├¡nh ph├¡ v├á kh├│a xe IN_USE)
+       const trip = await api.createTrip(payload);
+       
+-      // 2. Cß║¡p nhß║¡t trß║íng th├íi xe th├ánh IN_USE (Kh├│a xe)
+-      await vehicleService.updateStatus(payload.vehicleId, 'IN_USE');
+-      
+       return trip;
+     } catch (error) {
+       console.error("Lß╗ùi trong qu├í tr├¼nh ─Éß║╖t xe: ", error);
+@@ -31,15 +27,12 @@ export const bookingFlow = {
+ 
+   /**
+    * Gß╗ìi khi ng╞░ß╗¥i d├╣ng bß║Ñm n├║t Kß║┐t th├║c chuyß║┐n ─æi (Trß║ú xe).
+-   * Chß║íy luß╗ông: endTrip -> updateVehicleStatus(AVAILABLE)
++   * Chß║íy luß╗ông: endTrip (Backend sß║╜ tß╗▒ ─æß╗Öng chuyß╗ân trß║íng th├íi xe sang AVAILABLE)
+    */
+-  handleEndTrip: async (tripId: string, vehicleId: string) => {
++  handleEndTrip: async (tripId: string, endStationId?: string) => {
+     try {
+-      // 1. Kß║┐t th├║c chuyß║┐n ─æi (T├¡nh tiß╗ün, chß╗æt giß╗¥)
+-      const trip = await api.returnVehicle(tripId);
+-      
+-      // 2. Trß║ú trß║íng th├íi xe vß╗ü AVAILABLE (Sß║╡n s├áng phß╗Ñc vß╗Ñ)
+-      await vehicleService.updateStatus(vehicleId, 'AVAILABLE');
++      // 1. Kß║┐t th├║c chuyß║┐n ─æi (Backend chß╗æt giß╗¥, t├¡nh tiß╗ün, v├á trß║ú xe vß╗ü AVAILABLE)
++      const trip = await api.returnVehicle(tripId, endStationId);
+       
+       return trip;
+     } catch (error) {
+diff --git a/src/services/vehicle.ts b/src/services/vehicle.ts
+index d543275..95bd7e8 100644
+--- a/src/services/vehicle.ts
++++ b/src/services/vehicle.ts
+@@ -12,6 +12,11 @@ export const vehicleService = {
+     return data;
+   },
+ 
++  getByCode: async (code: string): Promise<Vehicle> => {
++    const { data } = await apiClient.get<Vehicle>(`/vehicle/code/${code}`);
++    return data;
++  },
++
+   addVehicle: async (payload: any) => {
+     const { data } = await apiClient.post('/vehicle', payload);
+     return data;

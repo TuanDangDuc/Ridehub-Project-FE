@@ -3,13 +3,22 @@ export type Role = 'USER' | 'ADMIN';
 
 export interface User {
   id: string;
-  userName: string;
+  userName?: string;
+  username?: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  avatarUrl: string;
-  role: Role;
-  status: 'ACTIVE' | 'BANNED';
+  firstName?: string;
+  lastName?: string;
+  firstname?: string;
+  lastname?: string;
+  avatarUrl?: string;
+  role?: Role;
+  status?: 'ACTIVE' | 'BANNED';
+  phoneNumber?: string;
+  phone?: string;
+  identityNumber?: string;
+  dateOfBirth?: string;
+  sex?: string;
+  createdAt?: string;
 }
 
 export interface Vehicle {

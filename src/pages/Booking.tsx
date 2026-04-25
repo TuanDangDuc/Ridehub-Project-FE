@@ -33,13 +33,15 @@ const Booking: React.FC = () => {
       navigate('/login');
       return;
     }
+    const userObj = JSON.parse(savedUser);
+    const realUserId = userObj.id;
 
     const fetchData = async () => {
       if (!id) return;
       try {
         const [v, u] = await Promise.all([
           api.getVehicleById(id),
-          api.getUserProfile('u1')
+          api.getUserProfile(realUserId)
         ]);
         if (v) setVehicle(v);
         if (u) setUser(u);
@@ -94,15 +96,19 @@ const Booking: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      await api.createBooking({
-        startTime: startDate.toISOString(),
-        endTime: getEndDate().toISOString(),
-        startStationId: pickupStationId,
-        endStationId: 'any',
+      const savedUser = localStorage.getItem('user');
+      const userObj = savedUser ? JSON.parse(savedUser) : null;
+      const realUserId = userObj?.id;
+
+      if (!realUserId) {
+        navigate('/login');
+        return;
+      }
+
+      await api.createTrip({
+        userId: realUserId,
         vehicleId: vehicle.id,
-        userId: 'u1',
-        totalCost: calculateCost(),
-        distance: 0
+        startStationId: pickupStationId,
       });
       navigate('/my-bookings');
     } catch (error) {

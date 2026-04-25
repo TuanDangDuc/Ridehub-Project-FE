@@ -53,12 +53,12 @@ const Profile: React.FC = () => {
       if (profileFromApi) {
         setFormData({
           id: profileFromApi.id,
-          firstName: profileFromApi.firstName || '',
-          lastName: profileFromApi.lastName || '',
+          firstName: profileFromApi.firstname || profileFromApi.firstName || '',
+          lastName: profileFromApi.lastname || profileFromApi.lastName || '',
           email: profileFromApi.email || '',
-          phone: profileFromApi.phone || '',
+          phone: profileFromApi.phoneNumber || profileFromApi.phone || '',
           identityNumber: profileFromApi.identityNumber || '',
-          dateOfBirth: profileFromApi.dateOfBirth || '',
+          dateOfBirth: profileFromApi.dateOfBirth ? profileFromApi.dateOfBirth.split('T')[0] : '',
           sex: profileFromApi.sex || ''
         });
         if (profileFromApi.avatarUrl) {
@@ -86,15 +86,17 @@ const Profile: React.FC = () => {
     setIsSaving(true);
     setSuccess('');
     try {
-      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+      const formattedDate = formData.dateOfBirth ? `${formData.dateOfBirth}T00:00:00` : null;
+
       await api.updateUserProfile(formData.id, {
-        name: fullName,
-        email: formData.email,
-        phone: formData.phone,
+        id: formData.id,
+        firstname: formData.firstName,
+        lastname: formData.lastName,
+        phoneNumber: formData.phone,
         avatarUrl: avatarSrc,
         identityNumber: formData.identityNumber,
-        dateOfBirth: formData.dateOfBirth,
-        sex: formData.sex
+        dateOfBirth: formattedDate,
+        sex: formData.sex || null
       } as any);
 
       const updatedUser = await api.getUserProfile(formData.id);
@@ -137,7 +139,30 @@ const Profile: React.FC = () => {
           <Input label="Số điện thoại" type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} fullWidth />
           <Input label="Số CMND/CCCD" value={formData.identityNumber} onChange={e => setFormData({...formData, identityNumber: e.target.value})} fullWidth />
           <Input label="Ngày sinh" type="date" value={formData.dateOfBirth} onChange={e => setFormData({...formData, dateOfBirth: e.target.value})} fullWidth />
-          <Input label="Giới tính" value={formData.sex} onChange={e => setFormData({...formData, sex: e.target.value})} fullWidth />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+            <label style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--color-text)' }}>Giới tính</label>
+            <select
+              value={formData.sex}
+              onChange={e => setFormData({...formData, sex: e.target.value})}
+              style={{
+                padding: '0.75rem',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--color-border)',
+                backgroundColor: 'var(--color-surface)',
+                color: 'var(--color-text)',
+                width: '100%',
+                fontSize: '1rem',
+                transition: 'border-color 0.2s',
+                outline: 'none'
+              }}
+            >
+              <option value="">Chọn giới tính</option>
+              <option value="MALE">Nam</option>
+              <option value="FEMALE">Nữ</option>
+              <option value="OTHER">Khác</option>
+              <option value="PRIVATE">Không muốn tiết lộ</option>
+            </select>
+          </div>
           
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
             <Button type="submit" isLoading={isSaving}>Lưu thay đổi</Button>
