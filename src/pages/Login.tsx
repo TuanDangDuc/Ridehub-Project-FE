@@ -82,11 +82,11 @@ const Login: React.FC = () => {
         </div>
 
         <div className={styles.socialAuth}>
-          <button className={styles.socialBtn}>
+          <button type="button" className={styles.socialBtn} onClick={() => window.location.href = 'https://api.anhchuno.id.vn/api/oauth2/login/google'}>
             <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" width="20" />
             Google
           </button>
-          <button className={styles.socialBtn}>
+          <button type="button" className={styles.socialBtn} onClick={() => window.location.href = 'https://api.anhchuno.id.vn/api/oauth2/login/github'}>
             <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="Github" width="20" />
             Github
           </button>

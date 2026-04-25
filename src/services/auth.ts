@@ -30,8 +30,9 @@ export const authService = {
       localStorage.setItem("token", data);
 
       // Decode token để kiểm tra phiên
+      let decoded: DecodedToken;
       try {
-        const decoded = jwtDecode<DecodedToken>(data);
+        decoded = jwtDecode<DecodedToken>(data);
 
         // Kiểm tra token hết hạn chưa
         const currentTime = Date.now() / 1000;
@@ -45,9 +46,13 @@ export const authService = {
       }
 
       // Gọi API lấy thông tin user
+      let userData: UserInfo;
       try {
         const userResponse = await apiClient.get<UserInfo>(`/user/info/${username}`);
-        const userData: UserInfo = userResponse.data;
+        userData = userResponse.data;
+        // Merge role from token
+        userData.role = decoded.role || "USER";
+        
         // Lưu thông tin user vào localStorage
         localStorage.setItem("user", JSON.stringify(userData));
         window.dispatchEvent(new Event("user-auth-change"));
@@ -55,7 +60,6 @@ export const authService = {
       } catch (e) {
         // Nếu không lấy được user info, vẫn đăng nhập thành công
         console.error("Không lấy được thông tin user", e);
-        const decoded = jwtDecode<DecodedToken>(data);
         const fallbackUser = {
           username: decoded.sub,
           role: decoded.role || "USER",
