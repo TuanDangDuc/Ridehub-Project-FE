@@ -76,13 +76,13 @@ export const authService = {
         userData.role = finalRole;
         
         userData = {
-          id: data.id,
-          username: data.username,
-          email: data.email,
-          fullName: `${data.firstname || ''} ${data.lastname || ''}`.trim(),
-          phone: data.phoneNumber,
-          avatar: data.avatarUrl,
-          role: decoded.role || "USER"
+          id: (userData as any).id,
+          username: (userData as any).username,
+          email: (userData as any).email,
+          fullName: `${(userData as any).firstname || ''} ${(userData as any).lastname || ''}`.trim(),
+          phone: (userData as any).phoneNumber,
+          avatar: (userData as any).avatarUrl,
+          role: finalRole
         };
 
         // Lưu thông tin user vào localStorage

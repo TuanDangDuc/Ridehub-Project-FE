@@ -114,9 +114,9 @@ const Users: React.FC = () => {
                   <td style={{ padding: '1rem 1.5rem', color: 'var(--color-text-secondary)' }}>#{u.id}</td>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <img src={u.avatarUrl || `https://ui-avatars.com/api/?name=${u.firstName || u.email}&background=random`} alt={u.userName || (u as any).username} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                      <img src={u.avatarUrl || `https://ui-avatars.com/api/?name=${u.firstname || u.email}&background=random`} alt={u.username} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                       <div>
-                        <div style={{ fontWeight: 500 }}>{u.firstName || (u as any).firstname} {u.lastName || (u as any).lastname}</div>
+                        <div style={{ fontWeight: 500 }}>{u.firstname} {u.lastname}</div>
                         <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>{u.email}</div>
                       </div>
                     </div>
@@ -182,10 +182,10 @@ const Users: React.FC = () => {
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-              <img src={selectedUser.avatarUrl || `https://ui-avatars.com/api/?name=${selectedUser.firstName || selectedUser.email}&background=random`} alt="Avatar" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover' }} />
+              <img src={selectedUser.avatarUrl || `https://ui-avatars.com/api/?name=${selectedUser.firstname || selectedUser.email}&background=random`} alt="Avatar" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover' }} />
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.25rem' }}>{selectedUser.firstName || (selectedUser as any).firstname} {selectedUser.lastName || (selectedUser as any).lastname}</h3>
-                <p style={{ margin: '0.25rem 0', color: 'var(--color-text-secondary)' }}>@{selectedUser.userName || (selectedUser as any).username}</p>
+                <h3 style={{ margin: 0, fontSize: '1.25rem' }}>{selectedUser.firstname} {selectedUser.lastname}</h3>
+                <p style={{ margin: '0.25rem 0', color: 'var(--color-text-secondary)' }}>@{selectedUser.username}</p>
                 <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
                   <span style={{ padding: '0.25rem 0.5rem', backgroundColor: 'rgba(0,102,204,0.1)', color: 'var(--color-primary)', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
                     {typeof selectedUser.role?.[0] === 'object' 

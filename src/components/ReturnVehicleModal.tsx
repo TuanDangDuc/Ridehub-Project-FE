@@ -19,7 +19,7 @@ export const ReturnVehicleModal: React.FC<ReturnVehicleModalProps> = ({
   trip,
   stations,
   vehicle,
-  pricings
+  pricings: _pricings
 }) => {
   const [selectedStationId, setSelectedStationId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
