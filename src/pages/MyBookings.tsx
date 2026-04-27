@@ -11,6 +11,8 @@ const MyBookings: React.FC = () => {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [stations, setStations] = useState<Station[]>([]);
+  const [pricings, setPricings] = useState<any[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [expandedTripId, setExpandedTripId] = useState<string | null>(null);
   const [returningTripId, setReturningTripId] = useState<string | null>(null);
@@ -23,15 +25,19 @@ const MyBookings: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const getDurationString = (start: string, end: string, status: string) => {
+  const isTripActive = (end: string) => {
+    return !end || new Date(end).getFullYear() <= 1970;
+  };
+
+  const getDurationString = (start: string, end: string) => {
     const startDate = new Date(start);
-    const endDate = status === 'ONGOING' ? new Date() : new Date(end);
+    const endDate = isTripActive(end) ? new Date() : new Date(end);
     const diffMs = Math.max(0, endDate.getTime() - startDate.getTime());
-    
+
     const diffSecsTotal = Math.floor(diffMs / 1000);
     const secs = diffSecsTotal % 60;
     const diffMins = Math.floor(diffSecsTotal / 60);
-    
+
     if (diffMins < 60) return `${diffMins} phút ${secs} giây`;
     const hours = Math.floor(diffMins / 60);
     const mins = diffMins % 60;
@@ -46,16 +52,21 @@ const MyBookings: React.FC = () => {
         setLoading(false);
         return;
       }
-      
+
+      const parsedUser = JSON.parse(storedUser);
+      const realUserId = parsedUser.id || parsedUser.username || 'u1';
+
       try {
-        const [userTrips, allVehicles, allStations] = await Promise.all([
-          api.getUserTrips('u1'),
+        const [userTrips, allVehicles, allStations, allPricings] = await Promise.all([
+          api.getUserTrips(realUserId),
           api.getVehicles(),
-          api.getStations()
+          api.getStations(),
+          api.getPricings()
         ]);
         setTrips(userTrips);
         setVehicles(allVehicles);
         setStations(allStations);
+        setPricings(allPricings);
       } catch (error) {
         console.error(error);
       } finally {
@@ -82,34 +93,38 @@ const MyBookings: React.FC = () => {
           <CalendarX size={72} color="var(--color-primary)" style={{ opacity: 0.8, marginBottom: '1.5rem' }} />
           <h3>Vui lòng đăng nhập</h3>
           <p>Bạn cần đăng nhập để xem thông tin các chuyến đi của mình.</p>
-          <Button onClick={() => window.location.href='/login'}>Đăng nhập ngay</Button>
+          <Button onClick={() => window.location.href = '/login'}>Đăng nhập ngay</Button>
         </div>
       </div>
     );
   }
 
+
+
+  const visibleTrips = trips;
+
   return (
     <div className="container mt-8 mb-8">
       <h1 className={styles.pageTitle}>Quản lý chuyến đi</h1>
-      
-      {trips.length === 0 ? (
+
+      {visibleTrips.length === 0 ? (
         <div className={styles.emptyState}>
           <CalendarX size={72} color="var(--color-primary)" style={{ opacity: 0.8, marginBottom: '1.5rem' }} />
           <h3>Bạn chưa có chuyến đi nào</h3>
           <p>Hàng ngàn chiếc xe đang chờ bạn khám phá. Bắt đầu ngay!</p>
-          <Button onClick={() => window.location.href='/vehicles'}>Thuê xe ngay</Button>
+          <Button onClick={() => window.location.href = '/vehicles'}>Thuê xe ngay</Button>
         </div>
       ) : (
         <div className={styles.tripList}>
-          {trips.map(trip => (
+          {visibleTrips.map(trip => (
             <div key={trip.id} className={styles.tripCard}>
               <div className={styles.tripHeader}>
                 <div className={styles.tripId}>Mã chuyến: #{trip.id}</div>
-                <div className={styles.statusBadge} data-status={trip.status}>
-                  {trip.status === 'COMPLETED' ? 'Hoàn thành' : 'Đang diễn ra'}
+                <div className={styles.statusBadge} data-status={trip.tripStatus}>
+                  {trip.tripStatus === 'COMPLETED' ? 'Hoàn thành' : trip.tripStatus === 'CANCELLED' ? 'Đã hủy' : 'Đang diễn ra'}
                 </div>
               </div>
-              
+
               <div className={styles.tripBody}>
                 <div className={styles.routeInfo}>
                   <div className={styles.routeItem}>
@@ -119,22 +134,22 @@ const MyBookings: React.FC = () => {
                   <div className={styles.routeLine}></div>
                   <div className={styles.routeItem}>
                     <strong>Trả xe</strong>
-                    <span>{trip.status === 'ONGOING' ? 'Chưa trả xe' : new Date(trip.endTime).toLocaleString('vi-VN')}</span>
+                    <span>{isTripActive(trip.endTime) ? 'Chưa trả xe' : new Date(trip.endTime).toLocaleString('vi-VN')}</span>
                   </div>
                 </div>
 
                 <div className={styles.tripStats}>
                   <div className={styles.statBox}>
                     <span className={styles.statLabel}>Thời gian thuê</span>
-                    <strong className={styles.statValue} style={{ color: trip.status === 'ONGOING' ? '#d97706' : 'inherit' }}>
-                      {getDurationString(trip.startTime, trip.endTime, trip.status)}
+                    <strong className={styles.statValue} style={{ color: isTripActive(trip.endTime) ? '#d97706' : 'inherit' }}>
+                      {getDurationString(trip.startTime, trip.endTime)}
                     </strong>
                   </div>
                   <div className={styles.statBox}>
                     <span className={styles.statLabel}>Tổng chi phí</span>
                     <strong className={styles.statValue}>
-                      {trip.status === 'ONGOING' 
-                        ? <span style={{ color: '#d97706' }}>Đang tính...</span> 
+                      {isTripActive(trip.endTime)
+                        ? <span style={{ color: '#d97706' }}>Đang tính...</span>
                         : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(trip.totalCost)}
                     </strong>
                   </div>
@@ -145,27 +160,31 @@ const MyBookings: React.FC = () => {
                 <Button variant="outline" size="sm" onClick={() => setExpandedTripId(expandedTripId === trip.id ? null : trip.id)}>
                   {expandedTripId === trip.id ? 'Thu gọn hóa đơn' : 'Xem chi tiết hóa đơn'}
                 </Button>
-                {trip.status === 'ONGOING' && (
+                {isTripActive(trip.endTime) && (
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
+
                     <Button variant="primary" size="sm" onClick={() => setReturningTripId(trip.id)}>Trả xe</Button>
                   </div>
                 )}
               </div>
-              
+
               {expandedTripId === trip.id && (() => {
                 const vehicle = vehicles.find(v => v.id === trip.vehicleId);
                 const startStation = stations.find(s => s.id === trip.startStationId);
-                const pricePerMin = vehicle?.priceSingle ? Math.round(vehicle.priceSingle / 60) : 0;
-                
+
                 return (
                   <div className={styles.invoiceDetail}>
                     <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'var(--color-primary)' }}>Thông tin chuyến đi</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.95rem' }}>
                       <p><strong>Mã số xe:</strong> {vehicle?.code || 'Không xác định'}</p>
-                      <p><strong>Giá thuê mỗi phút:</strong> {pricePerMin} đ/phút</p>
+                      <div className={styles.divider}></div>
+                      {(() => {
+                        const pricePerMin = (vehicle as any)?.pricePerMinutes || 0;
+                        return <p><strong>Giá thuê mỗi phút:</strong> {pricePerMin} đ/phút</p>;
+                      })()}
                       <p><strong>Nhận xe:</strong> {new Date(trip.startTime).toLocaleString('vi-VN')} tại {startStation ? startStation.name : 'Trạm không xác định'}</p>
                       <p>
-                        <strong>Trả xe:</strong> {trip.status === 'ONGOING' ? <span style={{ color: '#d97706', fontWeight: 600 }}>Chưa trả xe (Thời gian đang tính)</span> : `${new Date(trip.endTime).toLocaleString('vi-VN')} tại ${stations.find(s => s.id === trip.endStationId)?.name || 'Trạm VNGo'}`}
+                        <strong>Trả xe:</strong> {isTripActive(trip.endTime) ? <span style={{ color: '#d97706', fontWeight: 600 }}>Chưa trả xe (Thời gian đang tính)</span> : `${new Date(trip.endTime).toLocaleString('vi-VN')} tại ${stations.find(s => s.id === trip.endStationId)?.name || 'Trạm VNGo'}`}
                       </p>
                     </div>
                   </div>
@@ -182,6 +201,7 @@ const MyBookings: React.FC = () => {
         trip={trips.find(t => t.id === returningTripId) || null}
         stations={stations}
         vehicle={vehicles.find(v => v.id === trips.find(t => t.id === returningTripId)?.vehicleId)}
+        pricings={pricings}
       />
     </div>
   );

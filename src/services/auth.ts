@@ -10,6 +10,7 @@ export interface DecodedToken {
 }
 
 export interface UserInfo {
+  id?: string | number;
   username: string;
   email?: string;
   fullName?: string;
@@ -28,6 +29,7 @@ export const authService = {
 
     if (data && !data.includes("failed")) {
       localStorage.setItem("token", data);
+      localStorage.setItem("username", username);
 
       // Decode token để kiểm tra phiên
       let decoded: DecodedToken;
@@ -48,11 +50,19 @@ export const authService = {
       // Gọi API lấy thông tin user
       let userData: UserInfo;
       try {
-        const userResponse = await apiClient.get<UserInfo>(`/user/info/${username}`);
-        userData = userResponse.data;
-        // Merge role from token
-        userData.role = decoded.role || "USER";
+        const userResponse = await apiClient.get<any>(`/user/info/${username}`);
+        const data = userResponse.data;
         
+        userData = {
+          id: data.id,
+          username: data.username,
+          email: data.email,
+          fullName: `${data.firstname || ''} ${data.lastname || ''}`.trim(),
+          phone: data.phoneNumber,
+          avatar: data.avatarUrl,
+          role: decoded.role || "USER"
+        };
+
         // Lưu thông tin user vào localStorage
         localStorage.setItem("user", JSON.stringify(userData));
         window.dispatchEvent(new Event("user-auth-change"));
@@ -81,6 +91,7 @@ export const authService = {
 
   logout: () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("username");
     localStorage.removeItem("user");
     window.dispatchEvent(new Event("user-auth-change"));
   },

@@ -34,7 +34,7 @@ const Booking: React.FC = () => {
       return;
     }
     const userObj = JSON.parse(savedUser);
-    const realUserId = userObj.id;
+    const realUserId = userObj.id || userObj.username || 'u1';
 
     const fetchData = async () => {
       if (!id) return;
@@ -98,7 +98,7 @@ const Booking: React.FC = () => {
     try {
       const savedUser = localStorage.getItem('user');
       const userObj = savedUser ? JSON.parse(savedUser) : null;
-      const realUserId = userObj?.id;
+      const realUserId = userObj ? (userObj.id || userObj.username || 'u1') : null;
 
       if (!realUserId) {
         navigate('/login');
@@ -133,7 +133,7 @@ const Booking: React.FC = () => {
           {user && (
             <div className={styles.userInfoBox}>
               <h3 className={styles.smallHeading}>Thông tin người đặt chuyến</h3>
-              <p><strong>Họ và tên:</strong> {user.firstName} {user.lastName}</p>
+              <p><strong>Họ và tên:</strong> {user.firstname} {user.lastname}</p>
               <p><strong>SĐT / Email:</strong> {user.email}</p>
             </div>
           )}
@@ -219,8 +219,8 @@ const Booking: React.FC = () => {
         <form onSubmit={handlePreBook} className={styles.formCard}>
           <div className={styles.formGroup}>
             <label>Loại vé thuê</label>
-            <select 
-              value={ticketType} 
+            <select
+              value={ticketType}
               onChange={(e) => setTicketType(e.target.value as any)}
               style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: '1rem', marginBottom: '1rem', backgroundColor: 'white' }}
             >
@@ -244,8 +244,8 @@ const Booking: React.FC = () => {
 
           <div className={styles.formGroup}>
             <label>Trạm nhận xe</label>
-            <select 
-              value={pickupStationId} 
+            <select
+              value={pickupStationId}
               onChange={(e) => setPickupStationId(e.target.value)}
               style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: '1rem', marginBottom: '1rem', backgroundColor: 'white' }}
             >

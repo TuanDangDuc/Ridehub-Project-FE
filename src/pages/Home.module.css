@@ -103,7 +103,9 @@
 }
 
 @media (max-width: 768px) {
-  .stepsGrid { grid-template-columns: 1fr; }
+  .stepsGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Pricing Section */
@@ -197,8 +199,13 @@
 }
 
 @media (max-width: 992px) {
-  .pricingGrid { grid-template-columns: 1fr; }
-  .pricingFeatured { transform: scale(1); }
+  .pricingGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pricingFeatured {
+    transform: scale(1);
+  }
 }
 
 /* Filters */

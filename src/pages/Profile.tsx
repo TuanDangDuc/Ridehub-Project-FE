@@ -122,7 +122,7 @@ const Profile: React.FC = () => {
       <h1 style={{ fontSize: '2rem', color: 'var(--color-primary)', marginBottom: '2rem' }}>Hồ sơ của tôi</h1>
       <div style={{ maxWidth: '600px', backgroundColor: 'var(--color-surface)', padding: '2rem', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)' }}>
         {success && <div style={{ backgroundColor: 'rgba(40,167,69,0.1)', color: 'var(--color-success)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>{success}</div>}
-        
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem' }}>
           <img src={avatarSrc} alt="Avatar" style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #dee2e6' }} />
           <div>
@@ -135,18 +135,18 @@ const Profile: React.FC = () => {
 
         <form onSubmit={handleUpdate}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <Input label="Họ" required value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} fullWidth />
-            <Input label="Tên" required value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} fullWidth />
+            <Input label="Họ" required value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} fullWidth />
+            <Input label="Tên" required value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} fullWidth />
           </div>
-          <Input label="Email" type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} fullWidth />
-          <Input label="Số điện thoại" type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} fullWidth />
-          <Input label="Số CMND/CCCD" value={formData.identityNumber} onChange={e => setFormData({...formData, identityNumber: e.target.value})} fullWidth />
-          <Input label="Ngày sinh" type="date" value={formData.dateOfBirth} onChange={e => setFormData({...formData, dateOfBirth: e.target.value})} fullWidth />
+          <Input label="Email" type="email" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} fullWidth />
+          <Input label="Số điện thoại" type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} fullWidth />
+          <Input label="Số CMND/CCCD" value={formData.identityNumber} onChange={e => setFormData({ ...formData, identityNumber: e.target.value })} fullWidth />
+          <Input label="Ngày sinh" type="date" value={formData.dateOfBirth} onChange={e => setFormData({ ...formData, dateOfBirth: e.target.value })} fullWidth />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
             <label style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--color-text)' }}>Giới tính</label>
             <select
               value={formData.sex}
-              onChange={e => setFormData({...formData, sex: e.target.value})}
+              onChange={e => setFormData({ ...formData, sex: e.target.value })}
               style={{
                 padding: '0.75rem',
                 borderRadius: 'var(--radius-md)',
@@ -166,7 +166,7 @@ const Profile: React.FC = () => {
               <option value="PRIVATE">Không muốn tiết lộ</option>
             </select>
           </div>
-          
+
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
             <Button type="submit" isLoading={isSaving}>Lưu thay đổi</Button>
           </div>

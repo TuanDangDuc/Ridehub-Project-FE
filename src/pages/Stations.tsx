@@ -51,12 +51,12 @@ const Stations: React.FC = () => {
   };
 
   const filteredStations = stations.filter(station => {
-    if (station.status === 'INACTIVE') return false;
+    if (!station || station.status === 'INACTIVE') return false;
     const term = removeAccents(keyword.toLowerCase());
-    const nameMatch = removeAccents(station.name.toLowerCase()).includes(term);
-    const addressMatch = removeAccents(station.address.toLowerCase()).includes(term);
-    const idMatch = station.id.includes(term);
-    
+    const nameMatch = station.name ? removeAccents(String(station.name).toLowerCase()).includes(term) : false;
+    const addressMatch = station.address ? removeAccents(String(station.address).toLowerCase()).includes(term) : false;
+    const idMatch = station.id ? String(station.id).includes(term) : false;
+
     return nameMatch || addressMatch || idMatch;
   });
 
@@ -64,7 +64,7 @@ const Stations: React.FC = () => {
     const indexInt = parseInt(station.id) || index;
     const lat = 10.7715 + ((indexInt * 7) % 50) / 1000 * (indexInt % 2 === 0 ? 1 : -1);
     const lng = 106.6908 + ((indexInt * 13) % 40) / 1000 * (indexInt % 3 === 0 ? 1 : -1);
-    
+
     setActiveStationId(station.id);
     setMapCenter([lat, lng]);
 
@@ -84,7 +84,7 @@ const Stations: React.FC = () => {
         <div className={styles.sidebarHeader}>
           DANH SÁCH TRẠM
         </div>
-        
+
         <div className={styles.filterSection}>
           <div className={styles.formGroup}>
             <label>Thành phố</label>
@@ -92,22 +92,22 @@ const Stations: React.FC = () => {
               <option value="Hồ Chí Minh">Hồ Chí Minh</option>
             </select>
           </div>
-          
+
           <div className={styles.formGroup}>
             <label>Từ khóa</label>
-            <input 
-              type="text" 
-              placeholder="Tên quận, đường, trạm xe..." 
+            <input
+              type="text"
+              placeholder="Tên quận, đường, trạm xe..."
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               className={styles.input}
             />
           </div>
-          
+
           <button className={styles.searchBtn}>
             Tìm kiếm
           </button>
-          
+
           <div className={styles.resultsCount}>
             Tìm thấy <span>{filteredStations.length}</span> trạm xe
           </div>
@@ -118,12 +118,12 @@ const Stations: React.FC = () => {
             <span>Hồ Chí Minh</span>
             <ChevronUp size={20} color="#0056b3" />
           </div>
-          
+
           <div className={styles.stationList}>
             {filteredStations.map((station, index) => (
-              <div 
-                key={station.id} 
-                className={styles.stationItem} 
+              <div
+                key={station.id}
+                className={styles.stationItem}
                 style={{ backgroundColor: activeStationId === station.id ? '#f1f8ff' : undefined }}
                 onClick={() => handleStationClick(station, index)}
               >
@@ -153,9 +153,9 @@ const Stations: React.FC = () => {
             const lat = 10.7715 + ((indexInt * 7) % 50) / 1000 * (indexInt % 2 === 0 ? 1 : -1);
             const lng = 106.6908 + ((indexInt * 13) % 40) / 1000 * (indexInt % 3 === 0 ? 1 : -1);
             return (
-              <Marker 
-                key={station.id} 
-                position={[lat, lng]} 
+              <Marker
+                key={station.id}
+                position={[lat, lng]}
                 icon={bikeIcon}
                 ref={(r) => { if (r) markerRefs.current[station.id] = r; }}
               >
