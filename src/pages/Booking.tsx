@@ -33,13 +33,15 @@ const Booking: React.FC = () => {
       navigate('/login');
       return;
     }
+    const userObj = JSON.parse(savedUser);
+    const realUserId = userObj.id || userObj.username || 'u1';
 
     const fetchData = async () => {
       if (!id) return;
       try {
         const [v, u] = await Promise.all([
           api.getVehicleById(id),
-          api.getUserProfile('u1')
+          api.getUserProfile(realUserId)
         ]);
         if (v) setVehicle(v);
         if (u) setUser(u);
@@ -94,15 +96,19 @@ const Booking: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      await api.createBooking({
-        startTime: startDate.toISOString(),
-        endTime: getEndDate().toISOString(),
-        startStationId: pickupStationId,
-        endStationId: 'any',
+      const savedUser = localStorage.getItem('user');
+      const userObj = savedUser ? JSON.parse(savedUser) : null;
+      const realUserId = userObj ? (userObj.id || userObj.username || 'u1') : null;
+
+      if (!realUserId) {
+        navigate('/login');
+        return;
+      }
+
+      await api.createTrip({
+        userId: realUserId,
         vehicleId: vehicle.id,
-        userId: 'u1',
-        totalCost: calculateCost(),
-        distance: 0
+        startStationId: pickupStationId,
       });
       navigate('/my-bookings');
     } catch (error) {
@@ -127,7 +133,7 @@ const Booking: React.FC = () => {
           {user && (
             <div className={styles.userInfoBox}>
               <h3 className={styles.smallHeading}>Thông tin người đặt chuyến</h3>
-              <p><strong>Họ và tên:</strong> {user.firstName} {user.lastName}</p>
+              <p><strong>Họ và tên:</strong> {user.firstname} {user.lastname}</p>
               <p><strong>SĐT / Email:</strong> {user.email}</p>
             </div>
           )}
@@ -213,8 +219,8 @@ const Booking: React.FC = () => {
         <form onSubmit={handlePreBook} className={styles.formCard}>
           <div className={styles.formGroup}>
             <label>Loại vé thuê</label>
-            <select 
-              value={ticketType} 
+            <select
+              value={ticketType}
               onChange={(e) => setTicketType(e.target.value as any)}
               style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: '1rem', marginBottom: '1rem', backgroundColor: 'white' }}
             >
@@ -238,8 +244,8 @@ const Booking: React.FC = () => {
 
           <div className={styles.formGroup}>
             <label>Trạm nhận xe</label>
-            <select 
-              value={pickupStationId} 
+            <select
+              value={pickupStationId}
               onChange={(e) => setPickupStationId(e.target.value)}
               style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: '1rem', marginBottom: '1rem', backgroundColor: 'white' }}
             >

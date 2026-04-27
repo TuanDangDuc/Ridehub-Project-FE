@@ -6,7 +6,7 @@ export const vehicleService = {
     const { data } = await apiClient.get<Vehicle[]>('/vehicle');
     return data;
   },
-  
+
   getById: async (id: string): Promise<Vehicle> => {
     const { data } = await apiClient.get<Vehicle>(`/vehicle/${id}`);
     return data;

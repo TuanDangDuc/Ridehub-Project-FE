@@ -3,6 +3,7 @@ import styles from './Header.module.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Scan } from 'lucide-react';
 import { ScannerModal } from './ScannerModal';
+import { authService } from '../services/auth';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -61,8 +62,7 @@ const Header: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    window.dispatchEvent(new Event('user-auth-change'));
+    authService.logout();
     setUser(null);
     navigate('/');
   };

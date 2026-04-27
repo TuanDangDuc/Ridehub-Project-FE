@@ -10,6 +10,7 @@ interface ReturnVehicleModalProps {
   trip: Trip | null;
   stations: Station[];
   vehicle: Vehicle | undefined;
+  pricings: any[];
 }
 
 export const ReturnVehicleModal: React.FC<ReturnVehicleModalProps> = ({ 
@@ -17,7 +18,8 @@ export const ReturnVehicleModal: React.FC<ReturnVehicleModalProps> = ({
   onClose, 
   trip,
   stations,
-  vehicle
+  vehicle,
+  pricings
 }) => {
   const [selectedStationId, setSelectedStationId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,8 +32,8 @@ export const ReturnVehicleModal: React.FC<ReturnVehicleModalProps> = ({
       const updateCost = () => {
         const start = new Date(trip.startTime).getTime();
         const end = new Date().getTime(); // Now
-        const mins = Math.max(1, Math.floor((end - start) / 60000));
-        const pricePerMin = vehicle?.priceSingle ? vehicle.priceSingle / 60 : 166;
+        const mins = Math.max(0, Math.floor((end - start) / 60000));
+        const pricePerMin = vehicle?.pricePerMinutes || 0;
         setCurrentCost(Math.round(mins * pricePerMin));
       };
       
@@ -65,7 +67,7 @@ export const ReturnVehicleModal: React.FC<ReturnVehicleModalProps> = ({
 
   const currentUserStr = localStorage.getItem('user');
   const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
-  const currentBalance = currentUser ? parseInt(localStorage.getItem(`vngo_wallet_balance_${currentUser.id || 'u1'}`) || '0', 10) : 0;
+  const currentBalance = currentUser ? parseInt(localStorage.getItem(`vngo_wallet_balance_${currentUser.id || currentUser.username || 'u1'}`) || '0', 10) : 0;
   const isInsufficient = currentBalance < currentCost;
 
   return (
@@ -111,12 +113,12 @@ export const ReturnVehicleModal: React.FC<ReturnVehicleModalProps> = ({
             <div className={styles.summaryRow}>
               <span>Tổng thời gian:</span>
               <strong>
-                {Math.max(1, Math.floor((new Date().getTime() - new Date(trip.startTime).getTime()) / 60000))} phút
+                {Math.max(0, Math.floor((new Date().getTime() - new Date(trip.startTime).getTime()) / 60000))} phút
               </strong>
             </div>
             <div className={styles.summaryRow}>
               <span>Đơn giá:</span>
-              <strong>{vehicle?.priceSingle ? Math.round(vehicle.priceSingle / 60) : 0} đ/phút</strong>
+              <strong>{vehicle?.pricePerMinutes || 0} đ/phút</strong>
             </div>
             <div className={styles.divider}></div>
             <div className={styles.summaryRow} style={{ fontSize: '1.2rem', color: 'var(--color-primary)' }}>

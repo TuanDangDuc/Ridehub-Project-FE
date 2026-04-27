@@ -28,11 +28,23 @@ export const ScannerModal: React.FC<ScannerModalProps> = ({ isOpen, onClose }) =
     setIsSubmitting(true);
     
     try {
-      // Simulate verifying and renting
+      // Check if user is logged in
       const user = localStorage.getItem('user');
-      const parsedUser = user ? JSON.parse(user) : null;
-      const userId = (parsedUser && parsedUser.id) ? parsedUser.id : 'u1';
+      const token = localStorage.getItem('token');
       
+      if (!token || !user) {
+        setError('Vui lòng đăng nhập trước khi thuê xe.');
+        setTimeout(() => navigate('/login'), 2000);
+        return;
+      }
+
+      const parsedUser = user ? JSON.parse(user) : null;
+      const userId = parsedUser?.id;
+      
+      if (!userId) {
+        setError('Không tìm thấy ID người dùng. Vui lòng đăng xuất và đăng nhập lại.');
+        return;
+      }
 
       let vehicle;
       
@@ -46,32 +58,47 @@ export const ScannerModal: React.FC<ScannerModalProps> = ({ isOpen, onClose }) =
       }
 
       if (!vehicle) {
-        throw new Error('Mã xe không tồn tại. Vui lòng kiểm tra lại.');
+        throw new Error('Mã không chính xác, vui lòng nhập lại.');
       }
       if (vehicle.status !== 'AVAILABLE') {
         throw new Error('Xe này hiện đang không sẵn sàng (hoặc đã được thuê).');
       }
 
-      const stations = await api.getStations();
-      const pricings = await api.getPricings();
-      
-      const startStationId = stations.length > 0 ? stations[0].id : undefined;
-      const pricingId = pricings.length > 0 ? pricings[0].id : undefined;
+      // Try to get station and pricing from the vehicle object directly
+      const startStationId = vehicle.stationId || (vehicle as any).station?.id;
+      const pricingId = (vehicle as any).pricingId || (vehicle as any).pricing_id || (vehicle as any).pricing?.id;
+
+      if (!startStationId) {
+        throw new Error('Dữ liệu xe thiếu thông tin trạm. Vui lòng liên hệ quản trị viên.');
+      }
+      if (!pricingId) {
+        throw new Error('Dữ liệu xe thiếu thông tin bảng giá. Vui lòng liên hệ quản trị viên.');
+      }
 
       // Delegate the transaction to backend
       await api.createTrip({
         userId,
-        vehicleId: vehicle.id, // Ensure we use proper ID
+        vehicleId: vehicle.id,
         startStationId,
         pricingId
       });
-
       
       onClose();
       window.dispatchEvent(new Event('trip-updated'));
       navigate('/my-bookings');
     } catch (err: any) {
-      setError(err.message || 'Mã xe không hợp lệ. Vui lòng thử lại.');
+      console.error('Rental error:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Lỗi không xác định. Vui lòng thử lại.';
+      
+      if (err.response?.status === 403) {
+        setError('Bạn không có quyền thực hiện hành động này (403). Vui lòng kiểm tra tài khoản.');
+      } else if (err.response?.status === 400) {
+        setError('Yêu cầu không hợp lệ (400). Có thể do dữ liệu xe hoặc tài khoản.');
+      } else if (err.response?.status === 404 || err.response?.status === 500) {
+        setError('Mã xe không đúng, vui lòng nhập lại.');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }

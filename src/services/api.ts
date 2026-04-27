@@ -15,16 +15,18 @@ export const api = {
     try {
       const { data } = await apiClient.get<Vehicle>(`/vehicle/${id}`);
       return data;
-    } catch {
-      return undefined;
+    } catch (error: any) {
+      if (error.response?.status === 404) return undefined;
+      throw error;
     }
   },
   getVehicleByCode: async (code: string): Promise<Vehicle | undefined> => {
     try {
       const { data } = await apiClient.get<Vehicle>(`/vehicle/code/${code}`);
       return data;
-    } catch {
-      return undefined;
+    } catch (error: any) {
+      if (error.response?.status === 404) return undefined;
+      throw error;
     }
   },
 
@@ -32,7 +34,7 @@ export const api = {
   getStations: async (): Promise<Station[]> => {
     try {
       const { data } = await apiClient.get<Station[]>('/station');
-      return data;
+      return Array.isArray(data) ? data : [];
     } catch {
       return [];
     }
@@ -42,7 +44,7 @@ export const api = {
   getPricings: async (): Promise<any[]> => {
     try {
       const { data } = await apiClient.get<any[]>('/pricing');
-      return data;
+      return Array.isArray(data) ? data : [];
     } catch {
       return [];
     }
@@ -81,12 +83,6 @@ export const api = {
     }
   },
 
-  createBooking: async (tripData: Partial<Trip>): Promise<Trip> => {
-    // Assuming backend endpoint to create a trip mapping
-    const { data } = await apiClient.post<Trip>('/trip', tripData);
-    return data;
-  },
-
   createTrip: async (payload: {
     userId: string;
     vehicleId: string;
@@ -111,7 +107,7 @@ export const api = {
   getVehicleReviews: async (vehicleId: string): Promise<Review[]> => {
     try {
       const { data } = await apiClient.get(`/vehicle/${vehicleId}/reviews`);
-      return data || [];
+      return Array.isArray(data) ? data : [];
     } catch {
       return [];
     }

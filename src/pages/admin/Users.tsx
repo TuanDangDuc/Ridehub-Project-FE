@@ -159,7 +159,7 @@ const Users: React.FC = () => {
                     </Button>
                     <button 
                       style={{ padding: '0.25rem 0.5rem', backgroundColor: 'transparent', color: 'var(--color-error)', border: '1px solid var(--color-error)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontSize: '0.875rem' }}
-                      onClick={() => handleDeleteUser(u.id, `${u.firstName} ${u.lastName}`)}
+                      onClick={() => handleDeleteUser(u.id, `${u.firstname} ${u.lastname}`)}
                       title="Xóa tài khoản"
                     >
                       Xóa

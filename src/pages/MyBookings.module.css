@@ -73,6 +73,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: white;
+  background-color: var(--color-primary);
 }
 
 .statusBadge[data-status="COMPLETED"] {

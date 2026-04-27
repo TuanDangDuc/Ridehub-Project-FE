@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseURL = "https://api.anhchuno.id.vn/api";
+const baseURL = import.meta.env.VITE_API_BASE_URL || "https://api.anhchuno.id.vn/api";
 
 export const apiClient = axios.create({
   baseURL,
@@ -20,8 +20,12 @@ export const publicApiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const username = localStorage.getItem('username');
+    if (token) {
+      config.headers.set('Authorization', `Bearer ${token}`);
+    }
+    if (username) {
+      config.headers.set('username', username);
     }
     return config;
   },

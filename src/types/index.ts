@@ -3,6 +3,7 @@ export type Role = 'USER' | 'ADMIN';
 
 export interface User {
   id: string;
+
   username: string;
   email: string;
   firstname: string;
@@ -44,10 +45,11 @@ export interface Trip {
   endTime: string;
   distance: number;
   totalCost: number;
-  status: 'COMPLETED' | 'ONGOING';
+  tripStatus: 'COMPLETED' | 'ONGOING' | 'CANCELLED';
   startStationId: string;
   endStationId: string;
   vehicleId: string;
+  pricingId?: string;
   userId: string;
 }
 
