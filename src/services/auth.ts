@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 export interface DecodedToken {
   sub: string; // username
   id?: string;
-  role?: string;
+  role?: Array<{ authority: string }> | string;
   name?: string;
   exp: number;
 }
@@ -50,8 +50,28 @@ export const authService = {
       try {
         const userResponse = await apiClient.get<UserInfo>(`/user/info/${username}`);
         userData = userResponse.data;
-        // Merge role from token
-        userData.role = decoded.role || "USER";
+        // Extract role string from either API response or JWT
+        let finalRole = 'ROLE_USER';
+        
+        // Check userData.role from API
+        if (Array.isArray(userData.role)) {
+          const apiRole = userData.role.some((r: any) => r.authority === 'ROLE_ADMIN');
+          if (apiRole) finalRole = 'ROLE_ADMIN';
+        } else if (userData.role === 'ROLE_ADMIN' || userData.role === 'ADMIN') {
+          finalRole = 'ROLE_ADMIN';
+        }
+        
+        // Check decoded.role from JWT
+        if (finalRole !== 'ROLE_ADMIN') {
+          if (Array.isArray(decoded.role)) {
+            const tokenRole = decoded.role.some((r: any) => r.authority === 'ROLE_ADMIN');
+            if (tokenRole) finalRole = 'ROLE_ADMIN';
+          } else if (decoded.role === 'ROLE_ADMIN' || decoded.role === 'ADMIN') {
+            finalRole = 'ROLE_ADMIN';
+          }
+        }
+        
+        userData.role = finalRole;
         
         // Lưu thông tin user vào localStorage
         localStorage.setItem("user", JSON.stringify(userData));
@@ -60,9 +80,16 @@ export const authService = {
       } catch (e) {
         // Nếu không lấy được user info, vẫn đăng nhập thành công
         console.error("Không lấy được thông tin user", e);
+        let roleStr = 'ROLE_USER';
+        if (Array.isArray(decoded.role)) {
+          const tokenRole = decoded.role.some((r: any) => r.authority === 'ROLE_ADMIN');
+          if (tokenRole) roleStr = 'ROLE_ADMIN';
+        } else if (decoded.role === 'ROLE_ADMIN' || decoded.role === 'ADMIN') {
+          roleStr = 'ROLE_ADMIN';
+        }
         const fallbackUser = {
           username: decoded.sub,
-          role: decoded.role || "USER",
+          role: roleStr,
         };
         localStorage.setItem("user", JSON.stringify(fallbackUser));
         window.dispatchEvent(new Event("user-auth-change"));

@@ -12,7 +12,7 @@ export interface User {
   identityNumber: string;
   avatarUrl: string;
   phoneNumber: string;
-  role?: Role;
+  role?: any;
   status: 'ACTIVE' | 'BANNED' | string;
   createdAt?: string;
 }

@@ -15,7 +15,10 @@ const AdminLayout: React.FC = () => {
       }
       try {
         const user = JSON.parse(userStr);
-        if (user.role !== 'ADMIN') {
+        const isAdmin = Array.isArray(user.role)
+          ? user.role.some((r: any) => r.authority === 'ROLE_ADMIN')
+          : user.role === 'ROLE_ADMIN' || user.role === 'ADMIN';
+        if (!isAdmin) {
           navigate('/', { replace: true }); // Chuyển hướng người dùng thường về trang chủ
         }
       } catch {

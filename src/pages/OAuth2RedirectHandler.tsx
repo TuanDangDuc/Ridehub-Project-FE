@@ -23,11 +23,35 @@ const OAuth2RedirectHandler: React.FC = () => {
                     try {
                         const userResponse = await apiClient.get(`/user/info/${usernameOrEmail}`);
                         const userData = userResponse.data;
+                        
+                        // Extract role string from either API response or JWT
+                        let finalRole = 'ROLE_USER';
+                        
+                        // Check userData.role from API
+                        if (Array.isArray(userData.role)) {
+                            const apiRole = userData.role.some((r: any) => r.authority === 'ROLE_ADMIN');
+                            if (apiRole) finalRole = 'ROLE_ADMIN';
+                        } else if (userData.role === 'ROLE_ADMIN' || userData.role === 'ADMIN') {
+                            finalRole = 'ROLE_ADMIN';
+                        }
+                        
+                        // Check decoded.role from JWT
+                        if (finalRole !== 'ROLE_ADMIN') {
+                            if (Array.isArray(decoded.role)) {
+                                const tokenRole = decoded.role.some((r: any) => r.authority === 'ROLE_ADMIN');
+                                if (tokenRole) finalRole = 'ROLE_ADMIN';
+                            } else if (decoded.role === 'ROLE_ADMIN' || decoded.role === 'ADMIN') {
+                                finalRole = 'ROLE_ADMIN';
+                            }
+                        }
+                        
+                        userData.role = finalRole;
+
                         localStorage.setItem('user', JSON.stringify(userData));
                         window.dispatchEvent(new Event('user-auth-change'));
                         
                         // Chuyển hướng theo role
-                        if (userData.role === 'ADMIN') {
+                        if (userData.role === 'ROLE_ADMIN') {
                             navigate('/admin');
                         } else {
                             navigate('/');
@@ -35,11 +59,19 @@ const OAuth2RedirectHandler: React.FC = () => {
                     } catch (apiError) {
                         console.error("Không lấy được thông tin user:", apiError);
                         // Fallback
+                        let roleStr = 'ROLE_USER';
+                        if (Array.isArray(decoded.role)) {
+                            const tokenRole = decoded.role.some((r: any) => r.authority === 'ROLE_ADMIN');
+                            if (tokenRole) roleStr = 'ROLE_ADMIN';
+                        } else if (decoded.role === 'ROLE_ADMIN' || decoded.role === 'ADMIN') {
+                            roleStr = 'ROLE_ADMIN';
+                        }
+                        
                         const fallbackData = {
                             id: decoded.sub,
                             email: decoded.sub,
                             name: decoded.name || decoded.sub,
-                            role: decoded.role || 'USER'
+                            role: roleStr
                         };
                         localStorage.setItem('user', JSON.stringify(fallbackData));
                         window.dispatchEvent(new Event('user-auth-change'));

@@ -19,8 +19,12 @@ const Login: React.FC = () => {
     
     try {
       const user = await authService.login(username, password);
-      if (user.role === 'ADMIN') {
+      const isAdmin = Array.isArray(user.role)
+        ? user.role.some((r: any) => r.authority === 'ROLE_ADMIN')
+        : user.role === 'ROLE_ADMIN' || user.role === 'ADMIN';
+      if (isAdmin) {
         navigate('/admin');
+        
       } else {
         navigate('/');
       }

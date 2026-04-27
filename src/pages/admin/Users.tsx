@@ -10,7 +10,12 @@ const Users: React.FC = () => {
 
   const loadUsers = async () => {
     try {
-      const { data } = await apiClient.get<User[]>('/user'); // API lấy danh sách user
+      const token = localStorage.getItem('token');
+      const { data } = await apiClient.get<User[]>('/user', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setUsers(data);
     } catch(err) {
       console.error("Lỗi get users", err);
@@ -22,31 +27,58 @@ const Users: React.FC = () => {
   }, []);
 
   const toggleStatus = async (id: string, currentStatus: string) => {
-      const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'; // Tùy chỉnh theo ENUM backend (nếu có BANNED thì truyền BANNED)
+      const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'; 
+      const token = localStorage.getItem('token');
       try {
-         await apiClient.patch(`/user/${id}/status?status=${newStatus}`);
-         loadUsers();
+         await apiClient.patch(`/user/${id}/status?status=${newStatus}`, {}, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+         });
+         setUsers(prevUsers => 
+           prevUsers.map(u => u.id === id 
+             ? { ...u, status: newStatus } 
+             : u
+           )
+         );
+           loadUsers();
       } catch (err) {
          alert("Lỗi đổi trạng thái");
       }
   };
 
   const toggleRole = async (id: string, currentRole: string) => {
-      const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN';
+      const newRole = (currentRole === 'ADMIN' || currentRole === 'ROLE_ADMIN') ? 'USER' : 'ADMIN';
+      const token = localStorage.getItem('token');
       try {
-         await apiClient.patch(`/user/${id}/role?role=${newRole}`);
-         loadUsers();
+         await apiClient.patch(`/user/${id}/role?role=${newRole}`, {}, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            } 
+         });
+         setUsers(prevUsers => 
+           prevUsers.map(u => u.id === id 
+             ? { ...u, role: [{ authority: newRole === 'ADMIN' ? 'ROLE_ADMIN' : 'ROLE_USER' }] } 
+             : u
+           )
+         );
+           loadUsers();
       } catch (err) {
-         alert("Lỗi đổi quyền");
+         alert("Lỗi đổi quyền" + err);
       }
   };
   const handleDeleteUser = async (id: string, name: string) => {
     if (confirm(`Bạn có chắc chắn muốn xóa tài khoản "${name}" không?`)) {
+       const token = localStorage.getItem('token');
        try {
-         await apiClient.delete(`/user/${id}`);
+         await apiClient.delete(`/user/${id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+         });
          loadUsers();
        } catch (err) {
-         alert("Lỗi xóa tài khoản");
+         alert("Lỗi xóa tài khoản" + err);
        }
     }
   };
@@ -68,51 +100,60 @@ const Users: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {users.map(u => (
-              <tr key={u.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                <td style={{ padding: '1rem 1.5rem', color: 'var(--color-text-secondary)' }}>#{u.id}</td>
-                <td style={{ padding: '1rem 1.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <img src={u.avatarUrl} alt={u.userName} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
-                    <div>
-                      <div style={{ fontWeight: 500 }}>{u.firstName} {u.lastName}</div>
-                      <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>{u.email}</div>
+            {users.map(u => {
+              const isAdmin = typeof u.role?.[0] === 'object'
+                ? u.role[0]?.authority === 'ROLE_ADMIN'
+                : (u.role?.[0] === 'ROLE_ADMIN' || u.role === 'ROLE_ADMIN' || u.role === 'ADMIN');
+
+              const displayRole = typeof u.role?.[0] === 'object' 
+                ? u.role[0]?.authority 
+                : (typeof u.role?.[0] === 'string' ? u.role[0] : (typeof u.role === 'string' ? u.role : 'ROLE_USER'));
+
+              return (
+                <tr key={u.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                  <td style={{ padding: '1rem 1.5rem', color: 'var(--color-text-secondary)' }}>#{u.id}</td>
+                  <td style={{ padding: '1rem 1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <img src={u.avatarUrl || `https://ui-avatars.com/api/?name=${u.firstName || u.email}&background=random`} alt={u.userName || (u as any).username} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                      <div>
+                        <div style={{ fontWeight: 500 }}>{u.firstName || (u as any).firstname} {u.lastName || (u as any).lastname}</div>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>{u.email}</div>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td style={{ padding: '1rem 1.5rem' }}>
-                  <span style={{ 
-                    padding: '0.25rem 0.5rem', 
-                    backgroundColor: u.role === 'ADMIN' ? 'rgba(0,102,204,0.1)' : 'rgba(108,117,125,0.1)', 
-                    color: u.role === 'ADMIN' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '0.875rem',
-                    fontWeight: 600
-                  }}>
-                    {u.role === 'ADMIN' ? <Shield size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }}/> : null}
-                    {u.role}
-                  </span>
-                </td>
-                <td style={{ padding: '1rem 1.5rem' }}>
-                  <span style={{ 
-                    padding: '0.25rem 0.75rem', 
-                    backgroundColor: u.status === 'ACTIVE' ? 'rgba(40,167,69,0.1)' : 'rgba(220,53,69,0.1)', 
-                    color: u.status === 'ACTIVE' ? 'var(--color-success)' : 'var(--color-error)',
-                    borderRadius: 'var(--radius-full)',
-                    fontSize: '0.875rem',
-                    fontWeight: 600
-                  }}>
-                    {u.status === 'ACTIVE' ? 'Hoạt động' : 'Bị cấm'}
-                  </span>
-                </td>
-                <td style={{ padding: '1rem 1.5rem' }}>
-                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <Button variant="secondary" size="sm" onClick={() => setSelectedUser(u)}>
-                      Xem
-                    </Button>
-                    <Button variant={u.role === 'ADMIN' ? 'danger' : 'primary'} size="sm" onClick={() => toggleRole(u.id, u.role)}>
-                      {u.role === 'ADMIN' ? 'Gỡ Admin' : 'Cấp Admin'}
-                    </Button>
+                  </td>
+                  <td style={{ padding: '1rem 1.5rem' }}>
+                    <span style={{ 
+                      padding: '0.25rem 0.5rem', 
+                      backgroundColor: isAdmin ? 'rgba(0,102,204,0.1)' : 'rgba(108,117,125,0.1)', 
+                      color: isAdmin ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                      borderRadius: 'var(--radius-sm)',
+                      fontSize: '0.875rem',
+                      fontWeight: 600
+                    }}>
+                      {isAdmin ? <Shield size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }}/> : null}
+                      {displayRole}
+                    </span>
+                  </td>
+                  <td style={{ padding: '1rem 1.5rem' }}>
+                    <span style={{ 
+                      padding: '0.25rem 0.75rem', 
+                      backgroundColor: u.status === 'ACTIVE' ? 'rgba(40,167,69,0.1)' : 'rgba(220,53,69,0.1)', 
+                      color: u.status === 'ACTIVE' ? 'var(--color-success)' : 'var(--color-error)',
+                      borderRadius: 'var(--radius-full)',
+                      fontSize: '0.875rem',
+                      fontWeight: 600
+                    }}>
+                      {u.status === 'ACTIVE' ? 'Hoạt động' : 'Bị cấm'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '1rem 1.5rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <Button variant="secondary" size="sm" onClick={() => setSelectedUser(u)}>
+                        Xem
+                      </Button>
+                      <Button variant={isAdmin ? 'danger' : 'primary'} size="sm" onClick={() => toggleRole(u.id, displayRole)}>
+                        {isAdmin ? 'Gỡ Admin' : 'Cấp Admin'}
+                      </Button>
                     <Button variant={u.status === 'ACTIVE' ? 'danger' : 'primary'} size="sm" onClick={() => toggleStatus(u.id, u.status)}>
                       {u.status === 'ACTIVE' ? 'Khóa' : 'Mở khóa'}
                     </Button>
@@ -126,7 +167,8 @@ const Users: React.FC = () => {
                   </div>
                 </td>
               </tr>
-            ))}
+                );
+            })}
           </tbody>
         </table>
       </div>
@@ -140,12 +182,16 @@ const Users: React.FC = () => {
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-              <img src={selectedUser.avatarUrl} alt="Avatar" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover' }} />
+              <img src={selectedUser.avatarUrl || `https://ui-avatars.com/api/?name=${selectedUser.firstName || selectedUser.email}&background=random`} alt="Avatar" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover' }} />
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.25rem' }}>{selectedUser.firstName} {selectedUser.lastName}</h3>
-                <p style={{ margin: '0.25rem 0', color: 'var(--color-text-secondary)' }}>@{selectedUser.userName}</p>
+                <h3 style={{ margin: 0, fontSize: '1.25rem' }}>{selectedUser.firstName || (selectedUser as any).firstname} {selectedUser.lastName || (selectedUser as any).lastname}</h3>
+                <p style={{ margin: '0.25rem 0', color: 'var(--color-text-secondary)' }}>@{selectedUser.userName || (selectedUser as any).username}</p>
                 <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
-                  <span style={{ padding: '0.25rem 0.5rem', backgroundColor: 'rgba(0,102,204,0.1)', color: 'var(--color-primary)', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>{selectedUser.role}</span>
+                  <span style={{ padding: '0.25rem 0.5rem', backgroundColor: 'rgba(0,102,204,0.1)', color: 'var(--color-primary)', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
+                    {typeof selectedUser.role?.[0] === 'object' 
+                      ? selectedUser.role[0]?.authority 
+                      : (typeof selectedUser.role?.[0] === 'string' ? selectedUser.role[0] : (typeof selectedUser.role === 'string' ? selectedUser.role : 'ROLE_USER'))}
+                  </span>
                   <span style={{ padding: '0.25rem 0.5rem', backgroundColor: selectedUser.status === 'ACTIVE' ? 'rgba(40,167,69,0.1)' : 'rgba(220,53,69,0.1)', color: selectedUser.status === 'ACTIVE' ? 'var(--color-success)' : 'var(--color-error)', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>{selectedUser.status}</span>
                 </div>
               </div>

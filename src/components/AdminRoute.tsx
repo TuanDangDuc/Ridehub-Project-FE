@@ -11,7 +11,10 @@ const AdminRoute: React.FC = () => {
 
   try {
     const user = JSON.parse(userStr);
-    if (user.role === 'ADMIN') {
+    const isAdmin = Array.isArray(user.role)
+      ? user.role.some((r: any) => r.authority === 'ROLE_ADMIN')
+      : user.role === 'ROLE_ADMIN' || user.role === 'ADMIN';
+    if (isAdmin) {
       // Đúng role ADMIN thì cho phép render component con
       return <Outlet />;
     }

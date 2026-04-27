@@ -123,7 +123,7 @@ const Header: React.FC = () => {
               <div className={styles.dropdown}>
                 <Link to="/profile" className={styles.dropdownItem}>Hồ sơ của tôi</Link>
                 <Link to="/wallet" className={styles.dropdownItem}>Nạp tiền</Link>
-                {user.role === 'ADMIN' && (
+                {(Array.isArray(user.role) ? user.role.some((r: any) => r.authority === 'ROLE_ADMIN') : (user.role === 'ROLE_ADMIN' || user.role === 'ADMIN')) && (
                   <>
                     <div className={styles.dropdownDivider}></div>
                     <Link to="/admin" className={styles.dropdownItem}>Dashboard</Link>
