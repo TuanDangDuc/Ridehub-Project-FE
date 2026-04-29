@@ -15,7 +15,7 @@ pipeline {
             def commitHash = env.GIT_COMMIT.take(7)
 
             def dockerImage = docker.build(
-              "ductuanbl2000/fe-architecture-app:${commitHash}",
+              "ductuanbl2000/fe-ridehub-app:${commitHash}",
               "."
             )
 
