@@ -34,6 +34,7 @@ function App() {
           <Route path="forgot-password" element={<div className="container mt-8">Quên mật khẩu (Flow)</div>} />
           
           <Route path="oauth2/redirect" element={<OAuth2RedirectHandler />} />
+          <Route path="oauth2/success" element={<OAuth2RedirectHandler />} />
           
           <Route path="vehicles" element={<VehicleList />} />
           <Route path="vehicles/:id" element={<VehicleDetail />} />

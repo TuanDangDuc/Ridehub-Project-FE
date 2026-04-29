@@ -1,4 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
+import type { DecodedToken } from '../services/auth';
+import { apiClient } from '../services/apiClient';
 import styles from './Home.module.css';
 import { api } from '../services/api';
 import type { Vehicle } from '../types';
@@ -6,11 +10,79 @@ import { VehicleCard } from '../components/VehicleCard';
 import { Spinner } from '../components/Spinner';
 
 const Home: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('Tất cả loại xe');
 
   useEffect(() => {
+    const handleOAuth2Callback = async () => {
+      const queryParams = new URLSearchParams(location.search);
+      const token = queryParams.get('token');
+
+      if (token) {
+        localStorage.setItem('token', token);
+        try {
+          const decoded = jwtDecode<DecodedToken>(token);
+          const usernameOrEmail = decoded.sub;
+          
+          try {
+            const userResponse = await apiClient.get(`/user/info/${usernameOrEmail}`);
+            const userData = userResponse.data;
+            
+            let finalRole = 'ROLE_USER';
+            if (Array.isArray(userData.role)) {
+              const apiRole = userData.role.some((r: any) => r.authority === 'ROLE_ADMIN');
+              if (apiRole) finalRole = 'ROLE_ADMIN';
+            } else if (userData.role === 'ROLE_ADMIN' || userData.role === 'ADMIN') {
+              finalRole = 'ROLE_ADMIN';
+            }
+            
+            if (finalRole !== 'ROLE_ADMIN') {
+              if (Array.isArray(decoded.role)) {
+                const tokenRole = decoded.role.some((r: any) => r.authority === 'ROLE_ADMIN');
+                if (tokenRole) finalRole = 'ROLE_ADMIN';
+              } else if (decoded.role === 'ROLE_ADMIN' || decoded.role === 'ADMIN') {
+                finalRole = 'ROLE_ADMIN';
+              }
+            }
+            
+            userData.role = finalRole;
+            localStorage.setItem('user', JSON.stringify(userData));
+            window.dispatchEvent(new Event('user-auth-change'));
+            
+            if (userData.role === 'ROLE_ADMIN') {
+              navigate('/admin');
+            } else {
+              navigate('/');
+            }
+          } catch (apiError) {
+            console.error("Không lấy được thông tin user:", apiError);
+            let roleStr = 'ROLE_USER';
+            if (Array.isArray(decoded.role)) {
+              const tokenRole = decoded.role.some((r: any) => r.authority === 'ROLE_ADMIN');
+              if (tokenRole) roleStr = 'ROLE_ADMIN';
+            } else if (decoded.role === 'ROLE_ADMIN' || decoded.role === 'ADMIN') {
+              roleStr = 'ROLE_ADMIN';
+            }
+            
+            const fallbackData = {
+              id: decoded.sub,
+              email: decoded.sub,
+              name: decoded.name || decoded.sub,
+              role: roleStr
+            };
+            localStorage.setItem('user', JSON.stringify(fallbackData));
+            window.dispatchEvent(new Event('user-auth-change'));
+          }
+        } catch (e) {
+          console.error("Invalid token format", e);
+        }
+      }
+    };
+
+    handleOAuth2Callback();
     const fetchHomeData = async () => {
       try {
         const vehiclesData = await api.getVehicles();
