@@ -101,13 +101,11 @@ const Users: React.FC = () => {
           </thead>
           <tbody>
             {users.map(u => {
-              const isAdmin = typeof u.role?.[0] === 'object'
-                ? u.role[0]?.authority === 'ROLE_ADMIN'
-                : (u.role?.[0] === 'ROLE_ADMIN' || u.role === 'ROLE_ADMIN' || u.role === 'ADMIN');
+              const isAdmin = Array.isArray(u.role)
+                ? u.role.some((r: any) => r.authority === 'ROLE_ADMIN' || r === 'ROLE_ADMIN')
+                : (u.role === 'ROLE_ADMIN' || u.role === 'ADMIN');
 
-              const displayRole = typeof u.role?.[0] === 'object' 
-                ? u.role[0]?.authority 
-                : (typeof u.role?.[0] === 'string' ? u.role[0] : (typeof u.role === 'string' ? u.role : 'ROLE_USER'));
+              const displayRole = isAdmin ? 'ADMIN' : 'USER';
 
               return (
                 <tr key={u.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
@@ -122,17 +120,21 @@ const Users: React.FC = () => {
                     </div>
                   </td>
                   <td style={{ padding: '1rem 1.5rem' }}>
-                    <span style={{ 
-                      padding: '0.25rem 0.5rem', 
-                      backgroundColor: isAdmin ? 'rgba(0,102,204,0.1)' : 'rgba(108,117,125,0.1)', 
-                      color: isAdmin ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-                      borderRadius: 'var(--radius-sm)',
-                      fontSize: '0.875rem',
-                      fontWeight: 600
-                    }}>
-                      {isAdmin ? <Shield size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }}/> : null}
-                      {displayRole}
-                    </span>
+                     <span style={{ 
+                       padding: '0.25rem 0.5rem', 
+                       backgroundColor: isAdmin ? 'rgba(0,102,204,0.1)' : 'rgba(108,117,125,0.1)', 
+                       color: isAdmin ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                       borderRadius: 'var(--radius-sm)',
+                       fontSize: '0.875rem',
+                       fontWeight: 600,
+                       whiteSpace: 'nowrap',
+                       display: 'inline-flex',
+                       alignItems: 'center',
+                       gap: '4px'
+                     }}>
+                       {isAdmin ? <Shield size={14} /> : null}
+                       {displayRole}
+                     </span>
                   </td>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <span style={{ 
@@ -188,19 +190,27 @@ const Users: React.FC = () => {
                 <p style={{ margin: '0.25rem 0', color: 'var(--color-text-secondary)' }}>@{selectedUser.username}</p>
                 <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
                   <span style={{ padding: '0.25rem 0.5rem', backgroundColor: 'rgba(0,102,204,0.1)', color: 'var(--color-primary)', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
-                    {typeof selectedUser.role?.[0] === 'object' 
-                      ? selectedUser.role[0]?.authority 
-                      : (typeof selectedUser.role?.[0] === 'string' ? selectedUser.role[0] : (typeof selectedUser.role === 'string' ? selectedUser.role : 'ROLE_USER'))}
+                    {Array.isArray(selectedUser.role)
+                      ? (selectedUser.role.some((r: any) => r.authority === 'ROLE_ADMIN' || r === 'ROLE_ADMIN') ? 'ADMIN' : 'USER')
+                      : (selectedUser.role === 'ROLE_ADMIN' || selectedUser.role === 'ADMIN' ? 'ADMIN' : 'USER')}
                   </span>
                   <span style={{ padding: '0.25rem 0.5rem', backgroundColor: selectedUser.status === 'ACTIVE' ? 'rgba(40,167,69,0.1)' : 'rgba(220,53,69,0.1)', color: selectedUser.status === 'ACTIVE' ? 'var(--color-success)' : 'var(--color-error)', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>{selectedUser.status}</span>
                 </div>
               </div>
             </div>
 
-            <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem' }}>
-              <p><strong>ID:</strong> #{selectedUser.id}</p>
-              <p><strong>Email:</strong> {selectedUser.email}</p>
-              <p><strong>Số điện thoại:</strong> {(selectedUser as any).phone || ''}</p>
+            <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem', display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem', fontSize: '0.875rem' }}>
+              <p style={{ margin: '0.25rem 0' }}><strong>ID:</strong> #{selectedUser.id}</p>
+              <p style={{ margin: '0.25rem 0' }}><strong>Tài khoản:</strong> {selectedUser.username || "Người dùng chưa điền thông tin"}</p>
+              <p style={{ margin: '0.25rem 0' }}><strong>Email:</strong> {selectedUser.email || "Người dùng chưa điền thông tin"}</p>
+              <p style={{ margin: '0.25rem 0' }}><strong>Họ:</strong> {selectedUser.firstname || "Người dùng chưa điền thông tin"}</p>
+              <p style={{ margin: '0.25rem 0' }}><strong>Tên:</strong> {selectedUser.lastname || "Người dùng chưa điền thông tin"}</p>
+              <p style={{ margin: '0.25rem 0' }}><strong>Giới tính:</strong> {(selectedUser as any).sex || "Người dùng chưa điền thông tin"}</p>
+              <p style={{ margin: '0.25rem 0' }}><strong>Ngày sinh:</strong> {(selectedUser as any).dateOfBirth ? new Date((selectedUser as any).dateOfBirth).toLocaleDateString('vi-VN') : "Người dùng chưa điền thông tin"}</p>
+              <p style={{ margin: '0.25rem 0' }}><strong>Số CCCD:</strong> {(selectedUser as any).identityNumber || "Người dùng chưa điền thông tin"}</p>
+              <p style={{ margin: '0.25rem 0' }}><strong>Số điện thoại:</strong> {selectedUser.phoneNumber || (selectedUser as any).phone || "Người dùng chưa điền thông tin"}</p>
+              <p style={{ margin: '0.25rem 0' }}><strong>Trạng thái:</strong> {selectedUser.status || "Người dùng chưa điền thông tin"}</p>
+              <p style={{ margin: '0.25rem 0' }}><strong>Ngày tạo:</strong> {(selectedUser as any).createdAt ? new Date((selectedUser as any).createdAt).toLocaleString('vi-VN') : "Người dùng chưa điền thông tin"}</p>
             </div>
             
             <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
