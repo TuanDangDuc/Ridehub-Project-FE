@@ -22,21 +22,23 @@ export interface Vehicle {
   id: string;
   name: string;
   code: string;
-  type: string; // e.g. 'Xe đạp', 'Xe đạp điện'
+  type: string;
   status: 'AVAILABLE' | 'RENTED' | 'MAINTENANCE';
-  batteryLevel?: number; // mostly for electric
-  pricePerMinutes?: number; // legacy
+  imageUrl?: string;
+  pricePerMinutes?: number;
+  stationId?: string;
+  pricingId?: string;
+
+  // FE extras (can keep for UI compatibility if needed, or remove)
+  brand?: string;
+  ownerName?: string;
+  ownerAvatar?: string;
+  rating?: number;
+  images?: string[];
+  features?: Record<string, boolean>;
   priceSingle?: number;
   priceDay?: number;
   priceWeek?: number;
-  brand: string;
-  ownerName: string;
-  ownerAvatar: string;
-  rating: number;
-  // Extras
-  images: string[];
-  features: Record<string, boolean>;
-  stationId?: string; // Where it is currently located
 }
 
 export interface Trip {
@@ -64,12 +66,13 @@ export interface Review {
 export interface Station {
   id: string;
   name: string;
-  address: string;
-  lat: number;
-  lng: number;
-  city: string;
-  vehicleCapacity: number;
+  latitude: number;
+  longitude: number;
+  capacity: number;
   currentVehicleCount: number;
+  // Extras for FE if needed
+  address?: string;
+  city?: string;
   status?: 'ACTIVE' | 'INACTIVE';
 }
 

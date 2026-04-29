@@ -3,8 +3,11 @@ import type { Vehicle } from '../types';
 
 export const vehicleService = {
   getAll: async (): Promise<Vehicle[]> => {
-    const { data } = await apiClient.get<Vehicle[]>('/vehicle');
-    return data;
+    // MOCK API matching BE DTO: id, name, code, type, imageUrl, status, pricePerMinutes, stationId
+    return [
+      { id: 'v1', name: 'Xe đạp VNGo 01', code: 'VNGO-B01', type: 'Xe đạp', status: 'AVAILABLE', imageUrl: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500&auto=format', pricePerMinutes: 200, stationId: '11111111-1111-1111-1111-111111111111' },
+      { id: 'v2', name: 'Xe đạp điện VNGo E01', code: 'VNGO-E01', type: 'Xe đạp điện', status: 'RENTED', imageUrl: 'https://images.unsplash.com/photo-1572295727871-7638149ea3d7?w=500&auto=format', pricePerMinutes: 500, stationId: '22222222-2222-2222-2222-222222222222' },
+    ];
   },
 
   getById: async (id: string): Promise<Vehicle> => {

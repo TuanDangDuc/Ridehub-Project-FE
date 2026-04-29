@@ -16,14 +16,14 @@ const AdminStations: React.FC = () => {
   }, []);
 
   const openModal = () => {
-    setFormData({ 
-      id: `00${stations.length + 1}`.slice(-3), // simple padded ID
-      name: '', 
-      address: '', 
-      lat: 10.762622, 
-      lng: 106.660172, 
+    setFormData({
+      id: `00${stations.length + 1}`.slice(-3),
+      name: '',
+      address: '',
+      latitude: 10.762622,
+      longitude: 106.660172,
       city: 'TP. Hồ Chí Minh',
-      vehicleCapacity: 20,
+      capacity: 20,
       currentVehicleCount: 0
     });
     setIsModalOpen(true);
@@ -37,7 +37,7 @@ const AdminStations: React.FC = () => {
       ...(formData as Station),
       status: 'ACTIVE'
     };
-    
+
     const updatedStations = [newStation, ...stations];
     setStations(updatedStations);
     localStorage.setItem('stations_v1', JSON.stringify(updatedStations));
@@ -93,12 +93,12 @@ const AdminStations: React.FC = () => {
                     <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>{s.address}</div>
                   </td>
                   <td style={{ padding: '1rem 1.5rem' }}>
-                    {s.currentVehicleCount} / {s.vehicleCapacity}
+                    {s.currentVehicleCount} / {s.capacity}
                   </td>
                   <td style={{ padding: '1rem 1.5rem' }}>
-                    <span style={{ 
-                      padding: '0.25rem 0.75rem', 
-                      backgroundColor: s.status === 'INACTIVE' ? 'rgba(220,53,69,0.1)' : 'rgba(40,167,69,0.1)', 
+                    <span style={{
+                      padding: '0.25rem 0.75rem',
+                      backgroundColor: s.status === 'INACTIVE' ? 'rgba(220,53,69,0.1)' : 'rgba(40,167,69,0.1)',
                       color: s.status === 'INACTIVE' ? 'var(--color-error)' : 'var(--color-success)',
                       borderRadius: 'var(--radius-full)',
                       fontSize: '0.875rem',
@@ -124,15 +124,15 @@ const AdminStations: React.FC = () => {
           <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
             <h2 style={{ marginTop: 0 }}>Thêm trạm xe mới</h2>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <Input label="Mã trạm (ID)" required value={formData.id || ''} onChange={e => setFormData({...formData, id: e.target.value})} />
-              <Input label="Tên trạm" required value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} />
-              <Input label="Địa chỉ" required value={formData.address || ''} onChange={e => setFormData({...formData, address: e.target.value})} />
-              <Input label="Khu vực (Thành phố)" required value={formData.city || ''} onChange={e => setFormData({...formData, city: e.target.value})} />
+              <Input label="Mã trạm (ID)" required value={formData.id || ''} onChange={e => setFormData({ ...formData, id: e.target.value })} />
+              <Input label="Tên trạm" required value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+              <Input label="Địa chỉ" required value={formData.address || ''} onChange={e => setFormData({ ...formData, address: e.target.value })} />
+              <Input label="Khu vực (Thành phố)" required value={formData.city || ''} onChange={e => setFormData({ ...formData, city: e.target.value })} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <Input label="Vĩ độ (Lat)" type="number" required value={formData.lat as unknown as string || ''} onChange={e => setFormData({...formData, lat: Number(e.target.value)})} />
-                <Input label="Kinh độ (Lng)" type="number" required value={formData.lng as unknown as string || ''} onChange={e => setFormData({...formData, lng: Number(e.target.value)})} />
+                <Input label="Vĩ độ (Lat)" type="number" required value={formData.latitude as unknown as string || ''} onChange={e => setFormData({ ...formData, latitude: Number(e.target.value) })} />
+                <Input label="Kinh độ (Lng)" type="number" required value={formData.longitude as unknown as string || ''} onChange={e => setFormData({ ...formData, longitude: Number(e.target.value) })} />
               </div>
-              <Input label="Sức chứa tối đa (xe)" type="number" required value={formData.vehicleCapacity as unknown as string || ''} onChange={e => setFormData({...formData, vehicleCapacity: Number(e.target.value)})} />
+              <Input label="Sức chứa tối đa (xe)" type="number" required value={formData.capacity as unknown as string || ''} onChange={e => setFormData({ ...formData, capacity: Number(e.target.value) })} />
 
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                 <Button type="button" variant="outline" fullWidth onClick={closeModal}>Hủy</Button>
