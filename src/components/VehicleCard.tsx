@@ -43,10 +43,10 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
             <Banknote size={16} />
             <span>{formatPrice(Math.round((vehicle.priceSingle || (vehicle.type === 'Xe đạp điện' ? 20000 : 10000)) / 60))}/phút</span>
           </div>
-          {vehicle.batteryLevel && (
+          {(vehicle as any).batteryLevel && (
             <div className={styles.detailItem}>
               <Battery size={16} />
-              <span>{vehicle.batteryLevel}% Pin</span>
+              <span>{(vehicle as any).batteryLevel}% Pin</span>
             </div>
           )}
         </div>

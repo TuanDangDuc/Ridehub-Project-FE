@@ -144,7 +144,7 @@ const Vehicles: React.FC = () => {
                 <tr key={v.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                      <img src={v.images[0]} alt={v.name} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
+                      <img src={v.images && v.images.length > 0 ? v.images[0] : 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800'} alt={v.name} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
                       <div>
                         <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{v.name}</div>
                         <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>{v.code}</div>

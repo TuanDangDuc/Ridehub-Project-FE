@@ -44,7 +44,7 @@ const VehicleDetail: React.FC = () => {
       {/* Overview Section */}
       <div className={styles.overviewGrid}>
         <div className={styles.gallery}>
-          <img src={vehicle.images[0]} alt={vehicle.name} className={styles.mainImage} />
+          <img src={vehicle.images && vehicle.images.length > 0 ? vehicle.images[0] : 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800'} alt={vehicle.name} className={styles.mainImage} />
         </div>
         <div className={styles.info}>
           <div className={styles.header}>
@@ -82,7 +82,7 @@ const VehicleDetail: React.FC = () => {
         <div className={styles.featuresSection}>
           <h2>Tính năng nổi bật</h2>
           <div className={styles.featuresList}>
-            {Object.entries(vehicle.features).map(([key, value]) => (
+            {Object.entries(vehicle.features || {}).map(([key, value]) => (
               <div key={key} className={`${styles.featureItem} ${!value ? styles.featureDisabled : ''}`}>
                 <CheckCircle size={20} color={value ? 'var(--color-success)' : 'var(--color-border)'} />
                 <span>{key}</span>

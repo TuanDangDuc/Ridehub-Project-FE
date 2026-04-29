@@ -299,7 +299,7 @@ const Booking: React.FC = () => {
 
       <div className={styles.rightCol}>
         <div className={styles.vehicleSummary}>
-          <img src={vehicle.images[0]} alt={vehicle.name} />
+          <img src={vehicle.images && vehicle.images.length > 0 ? vehicle.images[0] : 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800'} alt={vehicle.name} />
           <div className={styles.vehicleInfo}>
             <h3>{vehicle.name}</h3>
             <p>{vehicle.type} &bull; {vehicle.code}</p>
