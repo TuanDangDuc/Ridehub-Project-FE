@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { authService } from '../services/auth';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
@@ -7,10 +7,11 @@ import styles from './Auth.module.css';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(new URLSearchParams(location.search).get('expired') === 'true' ? 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' : '');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +44,7 @@ const Login: React.FC = () => {
     <div className={styles.authContainer}>
       <div className={styles.authCard}>
         <div className={styles.logo} style={{ fontSize: '2rem', fontWeight: 'bold' }}>
-          VN<span>GO</span>
+          Ride<span>hub</span>
         </div>
         <h2>Đăng nhập</h2>
         <p className={styles.subtitle}>Chào mừng bạn quay trở lại!</p>
@@ -86,11 +87,11 @@ const Login: React.FC = () => {
         </div>
 
         <div className={styles.socialAuth}>
-          <button type="button" className={styles.socialBtn} onClick={() => window.location.href = 'https://api.anhchuno.id.vn/api/oauth2/login/google'}>
+          <button type="button" className={styles.socialBtn} onClick={() => window.location.href = authService.GOOGLE_AUTH_URL}>
             <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" width="20" />
             Google
           </button>
-          <button type="button" className={styles.socialBtn} onClick={() => window.location.href = 'https://api.anhchuno.id.vn/api/oauth2/login/github'}>
+          <button type="button" className={styles.socialBtn} onClick={() => window.location.href = authService.GITHUB_AUTH_URL}>
             <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="Github" width="20" />
             Github
           </button>

@@ -10,15 +10,15 @@ const About: React.FC = () => {
         <section className={styles.introSection}>
           <div className={styles.introLeft}>
             <h1 className={styles.introTitle}>
-              VNGo - Cùng bạn đến mọi hành trình
+              Ridehub - Cùng bạn đến mọi hành trình
             </h1>
           </div>
           <div className={styles.introRight}>
             <p>
-              Mỗi chuyến đi là một hành trình khám phá cuộc sống và thế giới xung quanh, là cơ hội học hỏi và chinh phục những điều mới lạ của mỗi cá nhân để trở nên tốt hơn. Do đó, chất lượng trải nghiệm của khách hàng là ưu tiên hàng đầu và là nguồn cảm hứng của đội ngũ VNGo.
+              Mỗi chuyến đi là một hành trình khám phá cuộc sống và thế giới xung quanh, là cơ hội học hỏi và chinh phục những điều mới lạ của mỗi cá nhân để trở nên tốt hơn. Do đó, chất lượng trải nghiệm của khách hàng là ưu tiên hàng đầu và là nguồn cảm hứng của đội ngũ Ridehub.
             </p>
             <p>
-              VNGo là nền tảng chia sẻ phương tiện, sứ mệnh của chúng tôi không chỉ dừng lại ở việc kết nối công ty và khách hàng một cách nhanh chóng - an toàn - tiện lợi, mà còn hướng đến việc truyền cảm hứng khám phá những điều mới lạ đến cộng đồng qua những chuyến đi trên nền tảng của chúng tôi.
+              Ridehub là nền tảng chia sẻ phương tiện, sứ mệnh của chúng tôi không chỉ dừng lại ở việc kết nối công ty và khách hàng một cách nhanh chóng - an toàn - tiện lợi, mà còn hướng đến việc truyền cảm hứng khám phá những điều mới lạ đến cộng đồng qua những chuyến đi trên nền tảng của chúng tôi.
             </p>
           </div>
         </section>
@@ -48,10 +48,10 @@ const About: React.FC = () => {
             <h3 className={styles.visionSubtitle}>Cầm lái và Khám phá thế giới đầy Cảm hứng.</h3>
 
             <p className={styles.visionText}>
-              VNGo đặt mục tiêu trở thành cộng đồng mạng dùng phương tiện di chuyển văn minh & uy tín tại Việt Nam, nhằm mang lại những giá trị thiết thực cho tất cả những thành viên hướng đến một cuộc sống tốt đẹp hơn.
+              Ridehub đặt mục tiêu trở thành cộng đồng mạng dùng phương tiện di chuyển văn minh & uy tín tại Việt Nam, nhằm mang lại những giá trị thiết thực cho tất cả những thành viên hướng đến một cuộc sống tốt đẹp hơn.
             </p>
             <p className={styles.visionText}>
-              Chúng tôi tin rằng mỗi hành trình đều quan trọng, vì vậy đội ngũ và các đối tác của VNGo với nhiều kinh nghiệm về lĩnh vực cho thuê xe, công nghệ, bảo hiểm & du lịch sẽ mang đến cho hành trình của bạn thêm nhiều trải nghiệm thú vị cùng sự an toàn ở mức cao nhất.
+              Chúng tôi tin rằng mỗi hành trình đều quan trọng, vì vậy đội ngũ và các đối tác của Ridehub với nhiều kinh nghiệm về lĩnh vực cho thuê xe, công nghệ, bảo hiểm & du lịch sẽ mang đến cho hành trình của bạn thêm nhiều trải nghiệm thú vị cùng sự an toàn ở mức cao nhất.
             </p>
           </div>
           <div className={styles.visionRight}>

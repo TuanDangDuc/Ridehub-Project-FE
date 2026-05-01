@@ -20,7 +20,27 @@ import AdminStations from './pages/admin/AdminStations';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 import AdminRoute from './components/AdminRoute';
 
+import { authService } from './services/auth';
+import { useEffect } from 'react';
+
 function App() {
+  useEffect(() => {
+    // Periodic session check every 30 seconds
+    const interval = setInterval(() => {
+      const token = localStorage.getItem('token');
+      if (token && authService.isTokenExpired(token)) {
+        console.warn("Session expired. Redirecting to login...");
+        authService.logout();
+        // Redirect to login if not already there
+        if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+          window.location.href = '/login?expired=true';
+        }
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>

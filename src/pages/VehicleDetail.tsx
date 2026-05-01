@@ -1,29 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import type { Vehicle, Review } from '../types';
+import type { Vehicle } from '../types';
 import { Spinner } from '../components/Spinner';
 import { Button } from '../components/Button';
-import { Star, CheckCircle } from 'lucide-react';
 import styles from './VehicleDetail.module.css';
 
 const VehicleDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [price, setPrice] = useState<number>(0);
 
   useEffect(() => {
     const fetchDetail = async () => {
       if (!id) return;
       try {
-        const [vData, rData] = await Promise.all([
-          api.getVehicleById(id),
-          api.getVehicleReviews(id)
+        const [vData] = await Promise.all([
+          api.getVehicleById(id)
         ]);
-        if (vData) setVehicle(vData);
-        setReviews(rData);
+        if (vData) {
+          setVehicle(vData);
+          setPrice(vData.pricePerMinutes || 0);
+          if (vData.pricingId) {
+            api.getPricingById(vData.pricingId).then((pData) => {
+              if (pData && typeof pData.pricePerMinutes === 'number') {
+                setPrice(pData.pricePerMinutes);
+              }
+            });
+          }
+        }
       } catch (error) {
         console.error('Error fetching vehicle details', error);
       } finally {
@@ -37,14 +44,29 @@ const VehicleDetail: React.FC = () => {
   if (loading) return <div className="container mt-8 text-center"><Spinner size="lg" /></div>;
   if (!vehicle) return <div className="container mt-8 text-center"><p>Không tìm thấy phương tiện.</p><Button onClick={() => navigate('/')}>Quay lại</Button></div>;
 
-  const formatPrice = (price: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('vi-VN', { 
+      style: 'currency', 
+      currency: 'VND',
+      maximumFractionDigits: 5
+    }).format(price);
+  };
 
   return (
     <div className="container mt-8 mb-8">
       {/* Overview Section */}
       <div className={styles.overviewGrid}>
         <div className={styles.gallery}>
-          <img src={vehicle.images && vehicle.images.length > 0 ? vehicle.images[0] : 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800'} alt={vehicle.name} className={styles.mainImage} />
+          <img 
+            src={
+              (vehicle.imageUrl && (vehicle.imageUrl.startsWith('http://') || vehicle.imageUrl.startsWith('https://')))
+                ? vehicle.imageUrl
+                : '/favicon.png'
+            } 
+            alt={vehicle.name} 
+            className={styles.mainImage} 
+            style={!(vehicle.imageUrl && (vehicle.imageUrl.startsWith('http://') || vehicle.imageUrl.startsWith('https://'))) ? { objectFit: 'contain', padding: '2rem', backgroundColor: '#f9f9f9' } : {}}
+          />
         </div>
         <div className={styles.info}>
           <div className={styles.header}>
@@ -55,68 +77,16 @@ const VehicleDetail: React.FC = () => {
           </div>
           <p className={styles.subtitle}>{vehicle.type} &bull; {vehicle.brand}</p>
 
-          <div className={styles.rating}>
-            <Star fill="var(--color-warning)" color="var(--color-warning)" size={20} />
-            <span className={styles.ratingScore}>{vehicle.rating}</span>
-            <span className={styles.ratingCount}>({reviews.length} đánh giá)</span>
-          </div>
-
           <div className={styles.priceBox}>
-            <div className={styles.price}>{formatPrice(Math.round((vehicle.priceSingle || (vehicle.type === 'Xe đạp điện' ? 20000 : 10000)) / 60))}<span>/phút</span></div>
+            <div className={styles.price}>{formatPrice(price)}<span>/phút</span></div>
             <p>Bao gồm bảo hiểm cơ bản & hỗ trợ 24/7</p>
           </div>
-          <div className={styles.owner}>
-            <p className={styles.sectionTitle}>Chủ sở hữu</p>
-            <div className={styles.ownerInfo}>
-              <img src={vehicle.ownerAvatar} alt={vehicle.ownerName} />
-              <span>{vehicle.ownerName}</span>
-            </div>
-          </div>
         </div>
       </div>
 
 
 
-      {/* Features & Reviews */}
-      <div className={styles.detailsGrid}>
-        <div className={styles.featuresSection}>
-          <h2>Tính năng nổi bật</h2>
-          <div className={styles.featuresList}>
-            {Object.entries(vehicle.features || {}).map(([key, value]) => (
-              <div key={key} className={`${styles.featureItem} ${!value ? styles.featureDisabled : ''}`}>
-                <CheckCircle size={20} color={value ? 'var(--color-success)' : 'var(--color-border)'} />
-                <span>{key}</span>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        <div className={styles.reviewsSection}>
-          <h2>Đánh giá từ khách hàng</h2>
-          {reviews.length === 0 ? (
-            <p>Chưa có đánh giá nào.</p>
-          ) : (
-            <div className={styles.reviewList}>
-              {reviews.map(review => (
-                <div key={review.id} className={styles.reviewCard}>
-                  <div className={styles.reviewHeader}>
-                    <div className={styles.reviewerAvatar}></div>
-                    <div className={styles.reviewerInfo}>
-                      <h4>User_{review.userId}</h4>
-                      <div className={styles.stars}>
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} size={14} fill={i < review.rating ? "var(--color-warning)" : "var(--color-border)"} color={i < review.rating ? "var(--color-warning)" : "var(--color-border)"} />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <p className={styles.reviewContent}>{review.content}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   );
 };

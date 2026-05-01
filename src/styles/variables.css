@@ -1,11 +1,11 @@
 :root {
-  /* VNGo Based Color Palette (Blue, White, Gray) */
-  --color-primary: #0066cc; /* Deep Blue */
-  --color-primary-hover: #0052a3;
-  --color-secondary: #00ccff; /* Light Blue/Cyan */
-  --color-accent: #ff0000; /* Red accents like Vietnam flag in VNGo */
+  /* Ridehub Brighter & Vibrant Color Palette */
+  --color-primary: #3b82f6; /* Vibrant Blue (tailwind blue-500) */
+  --color-primary-hover: #2563eb;
+  --color-secondary: #0ea5e9; /* Vibrant Cyan (tailwind sky-500) */
+  --color-accent: #f59e0b; /* Vibrant Amber for highlights */
   
-  --color-background: #f4f6f9; /* Light gray background */
+  --color-background: #ffffff; /* Pure white background */
   --color-surface: #ffffff;
   
   --color-text-primary: #333333;
@@ -14,7 +14,7 @@
   
   --color-border: #e0e0e0;
   --color-error: #dc3545;
-  --color-success: #28a745;
+  --color-success: #10b981; /* Emerald Green */
   --color-warning: #ffc107;
   
   /* Typography */

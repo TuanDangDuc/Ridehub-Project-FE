@@ -26,14 +26,15 @@ const Header: React.FC = () => {
       }
       const userId = user.id || 'u1';
 
-      // Auto-migrate if they have legacy balance stuck in 'undefined'
-      const legacyBalance = localStorage.getItem('vngo_wallet_balance_undefined');
+      // Auto-migrate if they have legacy balance stuck in 'vngo' keys
+      const legacyBalance = localStorage.getItem(`vngo_wallet_balance_${userId}`) || localStorage.getItem('vngo_wallet_balance_undefined');
       if (legacyBalance) {
-        localStorage.setItem(`vngo_wallet_balance_${userId}`, legacyBalance);
+        localStorage.setItem(`ridehub_wallet_balance_${userId}`, legacyBalance);
+        localStorage.removeItem(`vngo_wallet_balance_${userId}`);
         localStorage.removeItem('vngo_wallet_balance_undefined');
       }
 
-      const storedBalance = localStorage.getItem(`vngo_wallet_balance_${userId}`);
+      const storedBalance = localStorage.getItem(`ridehub_wallet_balance_${userId}`);
       setBalance(storedBalance ? parseInt(storedBalance, 10) : 0);
     };
 
@@ -58,7 +59,7 @@ const Header: React.FC = () => {
   }, []);
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+    return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 5 }).format(amount) + 'đ';
   };
 
   const handleLogout = () => {
@@ -72,7 +73,7 @@ const Header: React.FC = () => {
       <div className={`container ${styles.headerContainer}`}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginRight: 'auto' }}>
           <Link to="/" className={styles.logo} style={{ marginRight: 0 }}>
-            VN<span>GO</span>
+            Ride<span>hub</span>
           </Link>
           <button
             onClick={() => setIsScannerOpen(true)}

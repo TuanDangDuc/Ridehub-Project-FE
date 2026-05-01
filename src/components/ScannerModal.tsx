@@ -126,7 +126,7 @@ export const ScannerModal: React.FC<ScannerModalProps> = ({ isOpen, onClose }) =
                       setCode(scannedValue);
                       setActiveTab('manual');
                       if (scannedValue.startsWith('http://') || scannedValue.startsWith('https://')) {
-                        setError('Mã QR không hợp lệ (chứa đường link). Vui lòng quét mã QR dạng văn bản chứa mã xe (VD: TN-EBK-001).');
+                        setError('Mã QR không hợp lệ (chứa đường link). Vui lòng quét mã QR dạng văn bản chứa mã xe (VD: RH-EBK-001).');
                       } else {
                         setError('');
                       }

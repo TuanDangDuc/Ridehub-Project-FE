@@ -40,7 +40,7 @@ export const MOCK_STATIONS = [
   { id: '040', name: 'Lê Lai', address: '60 Lê Lai - Phường Phạm Ngũ Lão - Quận 1 - TP Hồ Chí Minh' },
   { id: '041', name: 'Công viên 23/9 (đường Lê Lai)', address: 'Đối diện 144-146 Lê Lai - Phường Bến Thành - Quận 1 - TP Hồ Chí Minh' },
   { id: '042', name: 'Công viên 23/9 (đường Phạm Ngũ Lão)', address: 'Đối diện 311 Phạm Ngũ Lão - Phường Phạm Ngũ Lão - Quận 1 - TP Hồ Chí Minh' },
-  { id: '044', name: 'Trạm Văn Phòng VNGo HCM', address: 'Số 7 Đường số 6, KDC Sông Giồng, Phường Bình Trưng, TPHCM' },
+  { id: '044', name: 'Trạm Văn Phòng Ridehub HCM', address: 'Số 7 Đường số 6, KDC Sông Giồng, Phường Bình Trưng, TPHCM' },
   { id: '045', name: 'Khánh sạn Wink', address: '75 Nguyễn Bỉnh Khiêm - Phường Đa Kao - Quận 1 - TP Hồ Chí Minh' },
   { id: '046', name: 'TINI Coworking', address: '152 Đ. Võ Văn Kiệt Phường Nguyễn Thái Bình Quận 1' },
   { id: '047', name: 'Nguyễn Siêu', address: '18 Nguyễn Siêu, phường Bến Nghé, Quận 1, TP Hồ Chí Minh' },

@@ -101,7 +101,15 @@ const MyBookings: React.FC = () => {
 
 
 
-  const visibleTrips = trips;
+  const visibleTrips = [...trips].sort((a, b) => {
+    const aActive = isTripActive(a.endTime);
+    const bActive = isTripActive(b.endTime);
+    
+    if (aActive && !bActive) return -1;
+    if (!aActive && bActive) return 1;
+    
+    return new Date(b.startTime).getTime() - new Date(a.startTime).getTime();
+  });
 
   return (
     <div className="container mt-8 mb-8">
@@ -150,7 +158,7 @@ const MyBookings: React.FC = () => {
                     <strong className={styles.statValue}>
                       {isTripActive(trip.endTime)
                         ? <span style={{ color: '#d97706' }}>Đang tính...</span>
-                        : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(trip.totalCost)}
+                        : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 5 }).format(trip.totalCost)}
                     </strong>
                   </div>
                 </div>
@@ -184,7 +192,7 @@ const MyBookings: React.FC = () => {
                       })()}
                       <p><strong>Nhận xe:</strong> {new Date(trip.startTime).toLocaleString('vi-VN')} tại {startStation ? startStation.name : 'Trạm không xác định'}</p>
                       <p>
-                        <strong>Trả xe:</strong> {isTripActive(trip.endTime) ? <span style={{ color: '#d97706', fontWeight: 600 }}>Chưa trả xe (Thời gian đang tính)</span> : `${new Date(trip.endTime).toLocaleString('vi-VN')} tại ${stations.find(s => s.id === trip.endStationId)?.name || 'Trạm VNGo'}`}
+                        <strong>Trả xe:</strong> {isTripActive(trip.endTime) ? <span style={{ color: '#d97706', fontWeight: 600 }}>Chưa trả xe (Thời gian đang tính)</span> : `${new Date(trip.endTime).toLocaleString('vi-VN')} tại ${stations.find(s => s.id === trip.endStationId)?.name || 'Trạm Ridehub'}`}
                       </p>
                     </div>
                   </div>

@@ -140,7 +140,7 @@ const Booking: React.FC = () => {
           <div className={styles.userInfoBox} style={{ borderLeftColor: 'var(--color-success)' }}>
             <h3 className={styles.smallHeading}>Thông tin chuyến đi</h3>
             <p><strong>Nhận xe:</strong> {startDate?.toLocaleString('vi-VN')} tại {selectedStation.name} ({selectedStation.address})</p>
-            <p><strong>Trả xe:</strong> {getEndDate().toLocaleString('vi-VN')} tại Bất kỳ trạm VNGo nào</p>
+            <p><strong>Trả xe:</strong> {getEndDate().toLocaleString('vi-VN')} tại Bất kỳ trạm Ridehub nào</p>
             <p><strong>Thời gian thuê:</strong> {getDurationText()}</p>
             <p><strong>Loại vé:</strong> {ticketType === 'SINGLE' ? 'Vé lượt' : ticketType === 'DAY' ? 'Vé ngày' : 'Vé tuần'}</p>
             <p style={{ marginTop: '0.5rem', fontSize: '1.1rem', color: 'var(--color-primary)' }}><strong>Tổng cộng: {formatPrice(calculateCost())}</strong></p>
@@ -249,9 +249,9 @@ const Booking: React.FC = () => {
               onChange={(e) => setPickupStationId(e.target.value)}
               style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: '1rem', marginBottom: '1rem', backgroundColor: 'white' }}
             >
-              {MOCK_STATIONS.map(station => (
+              {MOCK_STATIONS.map((station, index) => (
                 <option key={station.id} value={station.id}>
-                  {station.id} - {station.name}
+                  Trạm {index + 1} - {station.name}
                 </option>
               ))}
             </select>
@@ -270,7 +270,7 @@ const Booking: React.FC = () => {
                 <MapPin size={20} /> Trạm trả xe
               </div>
               <div style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-                Bạn có thể trả xe tại <strong>Bất kỳ trạm VNGO nào</strong> trong quá trình sử dụng.
+                Bạn có thể trả xe tại <strong>Bất kỳ trạm Ridehub nào</strong> trong quá trình sử dụng.
               </div>
             </div>
           </div>

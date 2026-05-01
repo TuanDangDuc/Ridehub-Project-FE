@@ -41,7 +41,7 @@ const Register: React.FC = () => {
     <div className={styles.authContainer}>
       <div className={styles.authCard}>
         <div className={styles.logo} style={{ fontSize: '2rem', fontWeight: 'bold' }}>
-          VN<span>GO</span>
+          Ride<span>hub</span>
         </div>
         <h2>Đăng ký tài khoản</h2>
         <p className={styles.subtitle}>Mở khóa hành trình của bạn</p>
@@ -57,6 +57,21 @@ const Register: React.FC = () => {
             Đăng ký
           </Button>
         </form>
+
+        <div className={styles.divider}>
+          <span>Hoặc đăng ký với</span>
+        </div>
+
+        <div className={styles.socialAuth}>
+          <button type="button" className={styles.socialBtn} onClick={() => window.location.href = authService.GOOGLE_AUTH_URL}>
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" width="20" />
+            Google
+          </button>
+          <button type="button" className={styles.socialBtn} onClick={() => window.location.href = authService.GITHUB_AUTH_URL}>
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="Github" width="20" />
+            Github
+          </button>
+        </div>
 
         <p className={`${styles.switchAuth} mt-4`}>
           Đã có tài khoản? <Link to="/login">Đăng nhập ngay</Link>

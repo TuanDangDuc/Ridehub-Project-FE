@@ -20,6 +20,9 @@ export interface UserInfo {
 }
 
 export const authService = {
+  GOOGLE_AUTH_URL: "https://api.anhchuno.id.vn/api/oauth2/login/google",
+  GITHUB_AUTH_URL: "https://api.anhchuno.id.vn/api/oauth2/login/github",
+
   login: async (username: string, password: string) => {
     // API trả về chuỗi Token (String)
     const { data } = await publicApiClient.post<string>("/user/login", {
@@ -123,5 +126,24 @@ export const authService = {
     localStorage.removeItem("username");
     localStorage.removeItem("user");
     window.dispatchEvent(new Event("user-auth-change"));
+  },
+
+  isTokenExpired: (token: string): boolean => {
+    try {
+      const decoded = jwtDecode<DecodedToken>(token);
+      const currentTime = Date.now() / 1000;
+      return decoded.exp < currentTime;
+    } catch (e) {
+      return true;
+    }
+  },
+
+  checkSession: () => {
+    const token = localStorage.getItem("token");
+    if (token && authService.isTokenExpired(token)) {
+      authService.logout();
+      return false;
+    }
+    return !!token;
   },
 };
