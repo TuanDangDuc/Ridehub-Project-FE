@@ -3,28 +3,41 @@ import styles from './Header.module.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Scan } from 'lucide-react';
 import { ScannerModal } from './ScannerModal';
-import { authService } from '../services/auth';
+import { authService, type UserInfo } from '../services/auth';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{ name: string, role: string, avatarUrl?: string } | null>(null);
+  const [user, setUser] = useState<UserInfo | null>(null);
   const [balance, setBalance] = useState<number>(0);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   useEffect(() => {
     const checkUser = () => {
-      const storedUser = localStorage.getItem('user');
-      setUser(storedUser ? JSON.parse(storedUser) : null);
+      try {
+        const storedUser = localStorage.getItem('user');
+        setUser(storedUser ? JSON.parse(storedUser) : null);
+      } catch (e) {
+        console.error("Error parsing user from localStorage", e);
+        setUser(null);
+      }
     };
 
     const checkBalance = () => {
-      const storedUser = localStorage.getItem('user');
-      const user = storedUser ? JSON.parse(storedUser) : null;
-      if (!user) {
-        setBalance(0);
-        return;
-      }
-      const userId = user.id || 'u1';
+      try {
+        const storedUser = localStorage.getItem('user');
+        const userObj = storedUser ? JSON.parse(storedUser) : null;
+        if (!userObj) {
+          setBalance(0);
+          return;
+        }
+        
+        // Ưu tiên lấy balance trực tiếp từ object user nếu có
+        if (typeof userObj.balance === 'number') {
+          setBalance(userObj.balance);
+          return;
+        }
+
+        const userId = userObj.id || 'u1';
 
       // Auto-migrate if they have legacy balance stuck in 'vngo' keys
       const legacyBalance = localStorage.getItem(`vngo_wallet_balance_${userId}`) || localStorage.getItem('vngo_wallet_balance_undefined');
@@ -34,8 +47,12 @@ const Header: React.FC = () => {
         localStorage.removeItem('vngo_wallet_balance_undefined');
       }
 
-      const storedBalance = localStorage.getItem(`ridehub_wallet_balance_${userId}`);
-      setBalance(storedBalance ? parseInt(storedBalance, 10) : 0);
+        const storedBalance = localStorage.getItem(`ridehub_wallet_balance_${userId}`);
+        setBalance(storedBalance ? parseInt(storedBalance, 10) : 0);
+      } catch (e) {
+        console.error("Error parsing balance from localStorage", e);
+        setBalance(0);
+      }
     };
 
     checkUser();
@@ -48,7 +65,10 @@ const Header: React.FC = () => {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('user-auth-change', checkUser);
+    window.addEventListener('user-auth-change', () => {
+      checkUser();
+      checkBalance();
+    });
     window.addEventListener('wallet-updated', checkBalance);
 
     return () => {
@@ -59,7 +79,7 @@ const Header: React.FC = () => {
   }, []);
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 5 }).format(amount) + 'đ';
+    return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(amount) + 'đ';
   };
 
   const handleLogout = () => {
@@ -113,8 +133,8 @@ const Header: React.FC = () => {
               </div>
               <Link to="/profile" className={styles.avatarLink} title="Tài khoản của tôi">
                 <div className={styles.avatarCircle} style={{ overflow: 'hidden' }}>
-                  {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.fullName || user.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <User size={20} color="white" strokeWidth={2.5} />
                   )}

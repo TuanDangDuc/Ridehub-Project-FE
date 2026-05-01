@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import type { DecodedToken } from '../services/auth';
+import type { DecodedToken, UserInfo } from '../services/auth';
 import { apiClient } from '../services/apiClient';
 
 const OAuth2RedirectHandler: React.FC = () => {
@@ -47,11 +47,22 @@ const OAuth2RedirectHandler: React.FC = () => {
                         
                         userData.role = finalRole;
 
-                        localStorage.setItem('user', JSON.stringify(userData));
+                        const mappedData: UserInfo = {
+                            id: userData.id || decoded.sub,
+                            username: userData.username || decoded.sub,
+                            email: userData.email || decoded.sub,
+                            fullName: userData.fullName || (userData as any).firstname ? `${(userData as any).firstname || ''} ${(userData as any).lastname || ''}`.trim() : (decoded.name || decoded.sub),
+                            phone: userData.phone || (userData as any).phoneNumber,
+                            avatar: userData.avatar || (userData as any).avatarUrl,
+                            balance: userData.balance || 0,
+                            role: finalRole
+                        };
+
+                        localStorage.setItem('user', JSON.stringify(mappedData));
                         window.dispatchEvent(new Event('user-auth-change'));
                         
                         // Chuyển hướng theo role
-                        if (userData.role === 'ROLE_ADMIN') {
+                        if (mappedData.role === 'ROLE_ADMIN') {
                             navigate('/admin');
                         } else {
                             navigate('/');
@@ -67,11 +78,13 @@ const OAuth2RedirectHandler: React.FC = () => {
                             roleStr = 'ROLE_ADMIN';
                         }
                         
-                        const fallbackData = {
+                        const fallbackData: UserInfo = {
                             id: decoded.sub,
+                            username: decoded.sub,
                             email: decoded.sub,
-                            name: decoded.name || decoded.sub,
-                            role: roleStr
+                            fullName: decoded.name || decoded.sub,
+                            role: roleStr,
+                            balance: 0
                         };
                         localStorage.setItem('user', JSON.stringify(fallbackData));
                         window.dispatchEvent(new Event('user-auth-change'));

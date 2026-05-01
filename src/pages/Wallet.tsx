@@ -71,14 +71,23 @@ const Wallet: React.FC = () => {
     const newBalance = balance + remainingAmount;
     setBalance(newBalance);
     localStorage.setItem(`ridehub_wallet_balance_${userId}`, newBalance.toString());
+
+    // Sync with user object if exists
+    if (userStr) {
+      const userObj = JSON.parse(userStr);
+      userObj.balance = newBalance;
+      localStorage.setItem('user', JSON.stringify(userObj));
+    }
+
     setShowQR(false);
     setAmountInput('');
     window.dispatchEvent(new Event('wallet-updated'));
+    window.dispatchEvent(new Event('user-auth-change'));
     alert("Nạp tiền thành công!");
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 5 }).format(amount) + 'đ';
+    return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(amount) + 'đ';
   };
 
   return (
