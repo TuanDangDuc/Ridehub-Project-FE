@@ -26,7 +26,7 @@
 }
 
 .logo span {
-  color: var(--color-success);
+  color: var(--color-secondary);
 }
 
 .description {

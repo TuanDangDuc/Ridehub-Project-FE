@@ -9,7 +9,7 @@ const VehicleList: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterType, setFilterType] = useState('Tất cả loại xe');
+  const [filterType, setFilterType] = useState('ALL');
   const [selectedStation, setSelectedStation] = useState<string>('');
 
   useEffect(() => {
@@ -44,8 +44,8 @@ const VehicleList: React.FC = () => {
              style={{ padding: '0.625rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', fontSize: '0.95rem', cursor: 'pointer', outline: 'none', color: 'var(--color-text-primary)' }}
            >
              <option value="">Chọn trạm xe</option>
-             {stations.filter(st => st.status !== 'INACTIVE').map(st => (
-               <option key={st.id} value={st.id}>{st.id} - {st.name}</option>
+             {stations.filter(st => st.status !== 'INACTIVE').map((st, index) => (
+               <option key={st.id} value={st.id}>Trạm {index + 1} - {st.name}</option>
              ))}
            </select>
            <select 
@@ -53,9 +53,9 @@ const VehicleList: React.FC = () => {
              onChange={(e) => setFilterType(e.target.value)}
              style={{ padding: '0.625rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', fontSize: '0.95rem', cursor: 'pointer', outline: 'none', color: 'var(--color-text-primary)' }}
            >
-             <option>Tất cả loại xe</option>
-             <option>Xe đạp</option>
-             <option>Xe đạp điện</option>
+             <option value="ALL">Tất cả loại xe</option>
+             <option value="BIKE">Xe đạp</option>
+             <option value="ELECTRIC_BIKE">Xe đạp điện</option>
            </select>
         </div>
       </div>
@@ -75,7 +75,7 @@ const VehicleList: React.FC = () => {
             
             const filteredVehicles = vehicles.filter(v => {
               if (v.stationId !== selectedStation) return false;
-              if (filterType === 'Tất cả loại xe') return true;
+              if (filterType === 'ALL') return true;
               return v.type === filterType;
             });
             

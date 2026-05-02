@@ -7,7 +7,7 @@ const Footer: React.FC = () => {
     <footer className={styles.footer}>
       <div className={`container ${styles.footerContainer}`}>
         <div className={styles.brandSection}>
-          <h2 className={styles.logo}>VN<span>GO</span></h2>
+          <h2 className={styles.logo}>Ride<span>hub</span></h2>
           <p className={styles.description}>Dịch vụ xe điện công cộng thông minh hàng đầu tại Việt Nam.</p>
         </div>
         <div className={styles.linkSection}>
@@ -25,7 +25,7 @@ const Footer: React.FC = () => {
         </div>
       </div>
       <div className={styles.bottomBar}>
-        <p>&copy; {new Date().getFullYear()} VNGo. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Ridehub. All rights reserved.</p>
       </div>
     </footer>
   );

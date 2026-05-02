@@ -128,7 +128,7 @@ const Stations: React.FC = () => {
                 onClick={() => handleStationClick(station, index)}
               >
                 <div className={styles.stationInfo}>
-                  <h4 className={styles.stationName} style={{ marginBottom: '0.35rem', fontSize: '0.95rem', fontWeight: 600 }}>{station.id} - {station.name}</h4>
+                  <h4 className={styles.stationName} style={{ marginBottom: '0.35rem', fontSize: '0.95rem', fontWeight: 600 }}>Trạm {index + 1} - {station.name}</h4>
                   <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>{station.address}</p>
                 </div>
                 <div className={styles.stationIcon}>
@@ -162,7 +162,7 @@ const Stations: React.FC = () => {
                 <Popup>
                   <div style={{ minWidth: '200px' }}>
                     <h3 style={{ margin: '0 0 8px 0', fontSize: '1rem', color: '#d32f2f' }}>
-                      {station.id} - {station.name}
+                      Trạm {index + 1} - {station.name}
                     </h3>
                     <p style={{ margin: 0, fontSize: '0.85rem', color: '#555', lineHeight: 1.4 }}>{station.address}</p>
                   </div>

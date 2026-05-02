@@ -17,9 +17,13 @@ export interface UserInfo {
   phone?: string;
   role?: string;
   avatar?: string;
+  balance?: number;
 }
 
 export const authService = {
+  GOOGLE_AUTH_URL: "https://api.anhchuno.id.vn/api/oauth2/login/google",
+  GITHUB_AUTH_URL: "https://api.anhchuno.id.vn/api/oauth2/login/github",
+
   login: async (username: string, password: string) => {
     // API trả về chuỗi Token (String)
     const { data } = await publicApiClient.post<string>("/user/login", {
@@ -75,20 +79,22 @@ export const authService = {
 
         userData.role = finalRole;
 
-        userData = {
+        
+        const mappedData: UserInfo = {
           id: (userData as any).id,
           username: (userData as any).username,
           email: (userData as any).email,
-          fullName: `${(userData as any).firstname || ''} ${(userData as any).lastname || ''}`.trim(),
-          phone: (userData as any).phoneNumber,
-          avatar: (userData as any).avatarUrl,
+          fullName: (userData as any).fullName || `${(userData as any).firstname || ''} ${(userData as any).lastname || ''}`.trim(),
+          phone: (userData as any).phoneNumber || (userData as any).phone,
+          avatar: (userData as any).avatarUrl || (userData as any).avatar,
+          balance: (userData as any).balance || 0,
           role: finalRole
         };
 
         // Lưu thông tin user vào localStorage
-        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("user", JSON.stringify(mappedData));
         window.dispatchEvent(new Event("user-auth-change"));
-        return userData;
+        return mappedData;
       } catch (e) {
         // Nếu không lấy được user info, vẫn đăng nhập thành công
         console.error("Không lấy được thông tin user", e);
@@ -99,9 +105,10 @@ export const authService = {
         } else if (decoded.role === 'ROLE_ADMIN' || decoded.role === 'ADMIN') {
           roleStr = 'ROLE_ADMIN';
         }
-        const fallbackUser = {
+        const fallbackUser: UserInfo = {
           username: decoded.sub,
           role: roleStr,
+          balance: 0
         };
         localStorage.setItem("user", JSON.stringify(fallbackUser));
         window.dispatchEvent(new Event("user-auth-change"));
@@ -123,5 +130,24 @@ export const authService = {
     localStorage.removeItem("username");
     localStorage.removeItem("user");
     window.dispatchEvent(new Event("user-auth-change"));
+  },
+
+  isTokenExpired: (token: string): boolean => {
+    try {
+      const decoded = jwtDecode<DecodedToken>(token);
+      const currentTime = Date.now() / 1000;
+      return decoded.exp < currentTime;
+    } catch (e) {
+      return true;
+    }
+  },
+
+  checkSession: () => {
+    const token = localStorage.getItem("token");
+    if (token && authService.isTokenExpired(token)) {
+      authService.logout();
+      return false;
+    }
+    return !!token;
   },
 };

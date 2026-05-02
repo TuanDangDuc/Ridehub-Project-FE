@@ -26,7 +26,7 @@ const Vehicles: React.FC = () => {
     loadVehicles();
   }, []);
 
-  const [filterType, setFilterType] = useState('Tất cả loại xe');
+  const [filterType, setFilterType] = useState('ALL');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -50,7 +50,7 @@ const Vehicles: React.FC = () => {
     } else {
       setEditingId(null);
       setPriceInput(Math.round(10000 / 60).toString());
-      setFormData({ name: '', code: '', type: 'Xe đạp', status: 'AVAILABLE', priceSingle: 10000, priceDay: 50000, priceWeek: 150000, brand: 'VNGo', images: ['https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800'] });
+      setFormData({ name: '', code: '', type: 'Xe đạp', status: 'AVAILABLE', priceSingle: 10000, priceDay: 50000, priceWeek: 150000, brand: 'Ridehub', images: ['https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800'] });
     }
     setIsModalOpen(true);
   };
@@ -188,9 +188,9 @@ const Vehicles: React.FC = () => {
             onChange={(e) => setFilterType(e.target.value)}
             style={{ padding: '0.625rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', backgroundColor: 'white', color: 'var(--color-text-primary)', outline: 'none' }}
           >
-            <option>Tất cả loại xe</option>
-            <option>Xe đạp</option>
-            <option>Xe đạp điện</option>
+            <option value="ALL">Tất cả loại xe</option>
+            <option value="BIKE">Xe đạp</option>
+            <option value="ELECTRIC_BIKE">Xe đạp điện</option>
           </select>
           <Button onClick={() => openModal()}>+ Thêm phương tiện mới</Button>
         </div>
@@ -210,11 +210,7 @@ const Vehicles: React.FC = () => {
           <tbody>
             {(() => {
               const filteredVehicles = vehicles.filter(v => {
-                let filterTypeEnum = filterType;
-                if (filterType === 'Xe đạp') filterTypeEnum = 'BIKE';
-                if (filterType === 'Xe đạp điện') filterTypeEnum = 'ELECTRIC_BIKE';
-
-                if (filterType !== 'Tất cả loại xe' && v.type !== filterTypeEnum && v.type !== filterType) return false;
+                if (filterType !== 'ALL' && v.type !== filterType) return false;
                 if (filterStation && v.stationId !== filterStation) return false;
                 return true;
               });

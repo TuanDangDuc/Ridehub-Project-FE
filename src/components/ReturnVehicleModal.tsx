@@ -34,7 +34,7 @@ export const ReturnVehicleModal: React.FC<ReturnVehicleModalProps> = ({
         const end = new Date().getTime(); // Now
         const mins = Math.max(0, Math.floor((end - start) / 60000));
         const pricePerMin = vehicle?.pricePerMinutes || 0;
-        setCurrentCost(Math.round(mins * pricePerMin));
+        setCurrentCost(mins * pricePerMin);
       };
       
       updateCost();
@@ -67,7 +67,7 @@ export const ReturnVehicleModal: React.FC<ReturnVehicleModalProps> = ({
 
   const currentUserStr = localStorage.getItem('user');
   const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
-  const currentBalance = currentUser ? parseInt(localStorage.getItem(`vngo_wallet_balance_${currentUser.id || currentUser.username || 'u1'}`) || '0', 10) : 0;
+  const currentBalance = currentUser ? parseInt(localStorage.getItem(`ridehub_wallet_balance_${currentUser.id || currentUser.username || 'u1'}`) || '0', 10) : 0;
   const isInsufficient = currentBalance < currentCost;
 
   return (
@@ -103,8 +103,8 @@ export const ReturnVehicleModal: React.FC<ReturnVehicleModalProps> = ({
               onChange={(e) => setSelectedStationId(e.target.value)}
             >
               <option value="" disabled>-- Chọn trạm gần nhất --</option>
-              {stations.map(s => (
-                <option key={s.id} value={s.id}>{s.id} - {s.name}</option>
+              {stations.map((s, index) => (
+                <option key={s.id} value={s.id}>Trạm {index + 1} - {s.name}</option>
               ))}
             </select>
           </div>
@@ -118,22 +118,22 @@ export const ReturnVehicleModal: React.FC<ReturnVehicleModalProps> = ({
             </div>
             <div className={styles.summaryRow}>
               <span>Đơn giá:</span>
-              <strong>{vehicle?.pricePerMinutes || 0} đ/phút</strong>
+              <strong>{new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 5 }).format(vehicle?.pricePerMinutes || 0)} đ/phút</strong>
             </div>
             <div className={styles.divider}></div>
             <div className={styles.summaryRow} style={{ fontSize: '1.2rem', color: 'var(--color-primary)' }}>
               <span>Tổng chi phí:</span>
-              <strong>{new Intl.NumberFormat('vi-VN').format(currentCost)} VNĐ</strong>
+              <strong>{new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 5 }).format(currentCost)} VNĐ</strong>
             </div>
           </div>
 
           <div className={styles.balanceBox}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Wallet size={20} color={isInsufficient ? "var(--color-error)" : "var(--color-success)"} />
-              <span>Số dư VNGo hiện tại:</span>
+              <span>Số dư Ridehub hiện tại:</span>
             </div>
             <strong style={{ color: isInsufficient ? 'var(--color-error)' : 'inherit' }}>
-              {new Intl.NumberFormat('vi-VN').format(currentBalance)} VNĐ
+              {new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 5 }).format(currentBalance)} VNĐ
             </strong>
           </div>
 

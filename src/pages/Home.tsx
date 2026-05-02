@@ -14,7 +14,7 @@ const Home: React.FC = () => {
   const location = useLocation();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterType, setFilterType] = useState('Tất cả loại xe');
+  const [filterType, setFilterType] = useState('ALL');
 
   useEffect(() => {
     const handleOAuth2Callback = async () => {
@@ -100,14 +100,15 @@ const Home: React.FC = () => {
     <div className={styles.homeContainer}>
       {/* Hero Section */}
       <section className={styles.hero}>
+        <div className={styles.heroDecor}>
+          <div className={styles.circle1}></div>
+          <div className={styles.circle2}></div>
+          <div className={styles.circle3}></div>
+        </div>
         <div className={`container ${styles.heroInner}`}>
           <div className={styles.heroContent}>
             <h1>Kết nối giao thông thông minh</h1>
-            <p>Trải nghiệm dịch vụ thuê xe hiện đại, tiện lợi và tiết kiệm cùng VNGo.</p>
-            <div className={styles.heroActions}>
-              <button className="btn btn-primary" style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', backgroundColor: 'var(--color-primary)', color: 'white', fontWeight: 600 }}>Tải ứng dụng</button>
-              <button className="btn btn-outline" style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', border: '1px solid white', backgroundColor: 'transparent', color: 'white', fontWeight: 600 }}>Tìm hiểu thêm</button>
-            </div>
+            <p>Trải nghiệm dịch vụ thuê xe hiện đại, tiện lợi và tiết kiệm cùng Ridehub.</p>
           </div>
         </div>
       </section>
@@ -152,6 +153,7 @@ const Home: React.FC = () => {
               <option>Xe đạp</option>
               <option>Xe đạp điện</option>
             </select>
+
           </div>
         </div>
 
@@ -161,7 +163,7 @@ const Home: React.FC = () => {
           <React.Fragment>
             {(() => {
               const filteredVehicles = vehicles.filter((v) => {
-                if (filterType === 'Tất cả loại xe') return true;
+                if (filterType === 'ALL') return true;
                 return v.type === filterType;
               });
 

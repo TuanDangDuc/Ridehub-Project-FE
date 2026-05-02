@@ -10,12 +10,12 @@ const Wallet: React.FC = () => {
 
   const [balance, setBalance] = useState<number>(() => {
     const userId = getUserAndId();
-    const savedBalance = localStorage.getItem(`vngo_wallet_balance_${userId}`);
+    const savedBalance = localStorage.getItem(`ridehub_wallet_balance_${userId}`);
     return savedBalance ? parseInt(savedBalance, 10) : 0;
   });
   const [debt, setDebt] = useState<number>(() => {
     const userId = getUserAndId();
-    const savedDebt = localStorage.getItem(`vngo_wallet_debt_${userId}`);
+    const savedDebt = localStorage.getItem(`ridehub_wallet_debt_${userId}`);
     return savedDebt ? parseInt(savedDebt, 10) : 0;
   });
   const [amountInput, setAmountInput] = useState<string>('');
@@ -65,20 +65,29 @@ const Wallet: React.FC = () => {
         remainingAmount = 0;
       }
       setDebt(currentDebt);
-      localStorage.setItem(`vngo_wallet_debt_${userId}`, currentDebt.toString());
+      localStorage.setItem(`ridehub_wallet_debt_${userId}`, currentDebt.toString());
     }
 
     const newBalance = balance + remainingAmount;
     setBalance(newBalance);
-    localStorage.setItem(`vngo_wallet_balance_${userId}`, newBalance.toString());
+    localStorage.setItem(`ridehub_wallet_balance_${userId}`, newBalance.toString());
+
+    // Sync with user object if exists
+    if (userStr) {
+      const userObj = JSON.parse(userStr);
+      userObj.balance = newBalance;
+      localStorage.setItem('user', JSON.stringify(userObj));
+    }
+
     setShowQR(false);
     setAmountInput('');
     window.dispatchEvent(new Event('wallet-updated'));
+    window.dispatchEvent(new Event('user-auth-change'));
     alert("Nạp tiền thành công!");
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+    return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(amount) + 'đ';
   };
 
   return (
@@ -150,13 +159,13 @@ const Wallet: React.FC = () => {
                   className={`${styles.presetBtn} ${amountInput === amount.toString() ? styles.active : ''}`}
                   onClick={() => handlePresetClick(amount)}
                 >
-                  {new Intl.NumberFormat('vi-VN').format(amount)}
+                  {new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 5 }).format(amount)}
                 </button>
               ))}
             </div>
 
             <div className={styles.warningText}>
-              ⚠️ Số tiền nạp vào tối thiểu 10.000 đ. Tiền nạp điểm vào tài khoản VNGo sẽ không hoàn lại được.
+              ⚠️ Số tiền nạp vào tối thiểu 10.000 đ. Tiền nạp điểm vào tài khoản Ridehub sẽ không hoàn lại được.
             </div>
 
             <button 
@@ -181,7 +190,7 @@ const Wallet: React.FC = () => {
               className={styles.qrImage} 
             />
             <p style={{ marginBottom: '1.5rem', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-              Vui lòng quét mã trên ứng dụng ngân hàng để nạp <strong>{formatCurrency(parseInt(amountInput, 10))}</strong> vào tài khoản VNGo của bạn.
+              Vui lòng quét mã trên ứng dụng ngân hàng để nạp <strong>{formatCurrency(parseInt(amountInput, 10))}</strong> vào tài khoản Ridehub của bạn.
             </p>
             <div className={styles.btnGroup}>
               <button className={styles.cancelBtn} onClick={() => setShowQR(false)}>Hủy</button>

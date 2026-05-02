@@ -9,6 +9,7 @@ export const vehicleService = {
     } catch {
       return [];
     }
+
   },
 
   getById: async (id: string): Promise<Vehicle> => {

@@ -5,8 +5,8 @@ import { LogIn, Search, Car, CreditCard, KeyRound, CheckCircle2 } from 'lucide-r
 const steps = [
   {
     id: 1,
-    title: 'Đăng ký thành viên VNGo',
-    desc: 'Để có thể đặt xe, bạn cần đăng ký tài khoản và đăng nhập vào hệ thống VNGo. Bạn có thể sử dụng số điện thoại cá nhân hoặc thông qua các nền tảng bên thứ 3 như Facebook, Google... tuy nhiên bạn bắt buộc phải xác thực số điện thoại trước khi đặt xe.',
+    title: 'Đăng ký thành viên Ridehub',
+    desc: 'Để có thể đặt xe, bạn cần đăng ký tài khoản và đăng nhập vào hệ thống Ridehub. Bạn có thể sử dụng số điện thoại cá nhân hoặc thông qua các nền tảng bên thứ 3 như Facebook, Google... tuy nhiên bạn bắt buộc phải xác thực số điện thoại trước khi đặt xe.',
     icon: <LogIn size={42} strokeWidth={1.5} />
   },
   {
@@ -24,7 +24,7 @@ const steps = [
   {
     id: 4,
     title: 'Thanh toán giữ chỗ',
-    desc: 'Sau khi đã đảm bảo đúng thông tin, khách thuê sẽ tiến hành thanh toán để giữ chỗ. Hiện tại VNGo áp dụng chính sách thanh toán 100% giá trị chuyến đi qua ứng dụng để giữ chỗ. VNGo hỗ trợ hình thức thanh toán chuyển khoản',
+    desc: 'Sau khi đã đảm bảo đúng thông tin, khách thuê sẽ tiến hành thanh toán để giữ chỗ. Hiện tại Ridehub áp dụng chính sách thanh toán 100% giá trị chuyến đi qua ứng dụng để giữ chỗ. Ridehub hỗ trợ hình thức thanh toán chuyển khoản',
     icon: <CreditCard size={42} strokeWidth={1.5} />
   },
   {
