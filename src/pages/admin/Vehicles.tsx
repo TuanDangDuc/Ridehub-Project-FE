@@ -5,6 +5,7 @@ import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Edit, Trash2, X } from 'lucide-react';
 import { api } from '../../services/api';
+import { apiClient } from '../../services/apiClient';
 
 const Vehicles: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -31,14 +32,17 @@ const Vehicles: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<Vehicle>>({});
   const [priceInput, setPriceInput] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const openModal = (vehicle?: Vehicle) => {
     if (vehicle) {
       setEditingId(vehicle.id);
-      const singlePrice = vehicle.priceSingle || (vehicle.type === 'Xe đạp điện' ? 20000 : 10000);
-      setPriceInput(Math.round(singlePrice / 60).toString());
+      const singlePrice = vehicle.priceSingle || (vehicle.type === 'ELECTRIC_BIKE' || vehicle.type === 'Xe đạp điện' ? 20000 : 10000);
+      const defaultPrice = vehicle.pricePerMinutes || Math.round(singlePrice / 60);
+      setPriceInput(defaultPrice.toString());
       setFormData({
         ...vehicle,
+        images: vehicle.imageUrl ? [vehicle.imageUrl] : (vehicle.images || []),
         priceSingle: singlePrice,
         priceDay: vehicle.priceDay || (vehicle.type === 'Xe đạp điện' ? 100000 : 50000),
         priceWeek: vehicle.priceWeek || (vehicle.type === 'Xe đạp điện' ? 300000 : 150000)
@@ -55,28 +59,109 @@ const Vehicles: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalData = { ...formData, priceSingle: Number(priceInput) * 60 };
-    
+    setIsSubmitting(true);
+
     try {
-      if (editingId) {
-        // await vehicleService.update(editingId, finalData); // Nếu Backend có logic Update Vehicle
-      } else {
-        await vehicleService.addVehicle(finalData);
+      let imageUrl = formData.images?.[0] || '';
+
+      // Upload to Cloudinary if it's a new base64 image
+      if (imageUrl.startsWith('data:image')) {
+        const cloudData = new FormData();
+        cloudData.append('file', imageUrl);
+        cloudData.append('upload_preset', 'ridehub');
+
+        const res = await fetch('https://api.cloudinary.com/v1_1/ddqhrx3sc/image/upload', {
+          method: 'POST',
+          body: cloudData
+        });
+        const cloudRes = await res.json();
+        imageUrl = cloudRes.secure_url;
       }
+
+      if (!editingId) {
+        // Step 1: Create Pricing
+        const pricingRes = await api.createPricing(Number(priceInput));
+        const pricingId = pricingRes.id;
+
+        // Step 2: Trigger QR Code API and Upload to Cloudinary
+        let qrCodeUrl = '';
+        try {
+          const qrRes = await apiClient.get('/qr/vehicle/' + formData.code, { responseType: 'blob' });
+          const cloudData = new FormData();
+          cloudData.append('file', qrRes.data, `QR_${formData.code}.png`);
+          cloudData.append('upload_preset', 'ridehub');
+
+          const uploadRes = await fetch('https://api.cloudinary.com/v1_1/ddqhrx3sc/image/upload', {
+            method: 'POST',
+            body: cloudData
+          });
+          const cloudRes = await uploadRes.json();
+          qrCodeUrl = cloudRes.secure_url;
+        } catch (qrErr) {
+          console.error("Lỗi sinh QR hoặc upload Cloudinary:", qrErr);
+        }
+
+        // Step 3: Create Vehicle
+        const finalData = {
+          name: formData.name,
+          code: formData.code,
+          type: formData.type === 'Xe đạp điện' ? 'ELECTRIC_BIKE' : 'BIKE',
+          status: formData.status,
+          stationId: formData.stationId || null,
+          imageUrl: imageUrl,
+          qrCodeUrl: qrCodeUrl,
+          pricingId: pricingId
+        };
+
+        await vehicleService.addVehicle(finalData);
+      } else {
+        // Step 1: Update Vehicle basic info
+        const finalData = {
+          id: editingId,
+          name: formData.name,
+          code: formData.code,
+          type: (formData.type === 'Xe đạp điện' || formData.type === 'ELECTRIC_BIKE') ? 'ELECTRIC_BIKE' : 'BIKE',
+          imageUrl: imageUrl,
+          qrCodeUrl: formData.qrCodeUrl,
+          pricingId: formData.pricingId
+        };
+        await vehicleService.update(finalData);
+
+        // Step 2: Update Pricing
+        if (formData.pricingId) {
+          await api.updatePricing(formData.pricingId, Number(priceInput));
+        }
+
+        // Step 3: Update Status
+        if (formData.status) {
+          await vehicleService.updateStatus(editingId, formData.status);
+        }
+
+        // Step 4: Update Station
+        if (formData.stationId !== undefined) {
+          const sId = formData.stationId || '';
+          await vehicleService.updateStation(editingId, sId);
+        }
+      }
+
       loadVehicles();
       closeModal();
-    } catch(err) {
+      alert("Chỉnh sửa thành công!");
+    } catch (err) {
+      console.error(err);
       alert("Có lỗi xảy ra khi lưu xe!");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Bạn có chắc chắn muốn ẩn/ngừng hoạt động phương tiện này?')) {
+    if (confirm('Bạn có chắc chắn muốn xoá phương tiện này khỏi cơ sở dữ liệu? Hành động này không thể hoàn tác.')) {
       try {
-         await vehicleService.delete(id);
-         loadVehicles();
+        await vehicleService.delete(id);
+        loadVehicles();
       } catch (err) {
-         alert("Không thể xoá xe");
+        alert("Không thể xoá xe");
       }
     }
   };
@@ -125,7 +210,11 @@ const Vehicles: React.FC = () => {
           <tbody>
             {(() => {
               const filteredVehicles = vehicles.filter(v => {
-                if (filterType !== 'Tất cả loại xe' && v.type !== filterType) return false;
+                let filterTypeEnum = filterType;
+                if (filterType === 'Xe đạp') filterTypeEnum = 'BIKE';
+                if (filterType === 'Xe đạp điện') filterTypeEnum = 'ELECTRIC_BIKE';
+
+                if (filterType !== 'Tất cả loại xe' && v.type !== filterTypeEnum && v.type !== filterType) return false;
                 if (filterStation && v.stationId !== filterStation) return false;
                 return true;
               });
@@ -144,7 +233,7 @@ const Vehicles: React.FC = () => {
                 <tr key={v.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                      <img src={v.images && v.images.length > 0 ? v.images[0] : 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800'} alt={v.name} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
+                      <img src={v.imageUrl || (v.images && v.images.length > 0 ? v.images[0] : 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800')} alt={v.name} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
                       <div>
                         <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{v.name}</div>
                         <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>{v.code}</div>
@@ -152,11 +241,11 @@ const Vehicles: React.FC = () => {
                     </div>
                   </td>
                   <td style={{ padding: '1rem 1.5rem', color: 'var(--color-text-primary)' }}>
-                    <div>{v.type}</div>
+                    <div>{v.type === 'BIKE' ? 'Xe đạp' : v.type === 'ELECTRIC_BIKE' ? 'Xe đạp điện' : v.type}</div>
                     <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>{v.brand}</div>
                   </td>
                   <td style={{ padding: '1rem 1.5rem', fontWeight: 500, color: 'var(--color-primary)' }}>
-                    {formatPrice(Math.round((v.priceSingle || (v.type === 'Xe đạp điện' ? 20000 : 10000)) / 60))}/phút
+                    {formatPrice(v.pricePerMinutes || Math.round((v.priceSingle || (v.type === 'ELECTRIC_BIKE' ? 20000 : 10000)) / 60))}/phút
                   </td>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <span style={{
@@ -233,7 +322,7 @@ const Vehicles: React.FC = () => {
                   {stations.map(s => <option key={s.id} value={s.id}>{s.id} - {s.name}</option>)}
                 </select>
               </div>
-              <Input label="Thương hiệu" required value={formData.brand || ''} onChange={e => setFormData({ ...formData, brand: e.target.value })} />
+
               <div>
                 <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem', fontWeight: 500 }}>Hình ảnh</label>
                 <input
@@ -257,8 +346,8 @@ const Vehicles: React.FC = () => {
               </div>
 
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <Button type="button" variant="outline" fullWidth onClick={closeModal}>Hủy</Button>
-                <Button type="submit" fullWidth>{editingId ? 'Cập nhật' : 'Thêm'}</Button>
+                <Button type="button" variant="outline" fullWidth onClick={closeModal} disabled={isSubmitting}>Hủy</Button>
+                <Button type="submit" fullWidth disabled={isSubmitting}>{isSubmitting ? 'Đang xử lý...' : (editingId ? 'Cập nhật' : 'Thêm')}</Button>
               </div>
             </form>
           </div>

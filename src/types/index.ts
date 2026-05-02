@@ -25,6 +25,7 @@ export interface Vehicle {
   type: string;
   status: 'AVAILABLE' | 'RENTED' | 'MAINTENANCE';
   imageUrl?: string;
+  qrCodeUrl?: string;
   pricePerMinutes?: number;
   stationId?: string;
   pricingId?: string;

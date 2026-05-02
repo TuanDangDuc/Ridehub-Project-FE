@@ -26,11 +26,11 @@ const Home: React.FC = () => {
         try {
           const decoded = jwtDecode<DecodedToken>(token);
           const usernameOrEmail = decoded.sub;
-          
+
           try {
             const userResponse = await apiClient.get(`/user/info/${usernameOrEmail}`);
             const userData = userResponse.data;
-            
+
             let finalRole = 'ROLE_USER';
             if (Array.isArray(userData.role)) {
               const apiRole = userData.role.some((r: any) => r.authority === 'ROLE_ADMIN');
@@ -38,7 +38,7 @@ const Home: React.FC = () => {
             } else if (userData.role === 'ROLE_ADMIN' || userData.role === 'ADMIN') {
               finalRole = 'ROLE_ADMIN';
             }
-            
+
             if (finalRole !== 'ROLE_ADMIN') {
               if (Array.isArray(decoded.role)) {
                 const tokenRole = decoded.role.some((r: any) => r.authority === 'ROLE_ADMIN');
@@ -47,11 +47,11 @@ const Home: React.FC = () => {
                 finalRole = 'ROLE_ADMIN';
               }
             }
-            
+
             userData.role = finalRole;
             localStorage.setItem('user', JSON.stringify(userData));
             window.dispatchEvent(new Event('user-auth-change'));
-            
+
             if (userData.role === 'ROLE_ADMIN') {
               navigate('/admin');
             } else {
@@ -66,7 +66,7 @@ const Home: React.FC = () => {
             } else if (decoded.role === 'ROLE_ADMIN' || decoded.role === 'ADMIN') {
               roleStr = 'ROLE_ADMIN';
             }
-            
+
             const fallbackData = {
               id: decoded.sub,
               email: decoded.sub,
@@ -143,15 +143,15 @@ const Home: React.FC = () => {
         <div className="flex justify-between items-center mb-8 w-full">
           <h2 className={styles.sectionTitle}>Khám phá phương tiện</h2>
           <div className={styles.filters}>
-             <select 
-               className={styles.filterSelect}
-               value={filterType}
-               onChange={(e) => setFilterType(e.target.value)}
-             >
-               <option>Tất cả loại xe</option>
-               <option>Xe đạp</option>
-               <option>Xe đạp điện</option>
-             </select>
+            <select
+              className={styles.filterSelect}
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+            >
+              <option>Tất cả loại xe</option>
+              <option>Xe đạp</option>
+              <option>Xe đạp điện</option>
+            </select>
           </div>
         </div>
 

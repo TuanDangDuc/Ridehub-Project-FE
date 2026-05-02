@@ -54,7 +54,7 @@ export const authService = {
         userData = userResponse.data;
         // Extract role string from either API response or JWT
         let finalRole = 'ROLE_USER';
-        
+
         // Check userData.role from API
         if (Array.isArray(userData.role)) {
           const apiRole = userData.role.some((r: any) => r.authority === 'ROLE_ADMIN');
@@ -62,7 +62,7 @@ export const authService = {
         } else if (userData.role === 'ROLE_ADMIN' || userData.role === 'ADMIN') {
           finalRole = 'ROLE_ADMIN';
         }
-        
+
         // Check decoded.role from JWT
         if (finalRole !== 'ROLE_ADMIN') {
           if (Array.isArray(decoded.role)) {
@@ -72,9 +72,9 @@ export const authService = {
             finalRole = 'ROLE_ADMIN';
           }
         }
-        
+
         userData.role = finalRole;
-        
+
         userData = {
           id: (userData as any).id,
           username: (userData as any).username,
