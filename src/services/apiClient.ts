@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseURL = "http://localhost:8080/api";
+const baseURL = "https://api.anhchuno.id.vn/api";
 
 export const apiClient = axios.create({
   baseURL,
