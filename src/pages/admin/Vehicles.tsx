@@ -241,7 +241,9 @@ const Vehicles: React.FC = () => {
                     <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>{v.brand}</div>
                   </td>
                   <td style={{ padding: '1rem 1.5rem', fontWeight: 500, color: 'var(--color-primary)' }}>
-                    {formatPrice(v.pricePerMinutes || Math.round((v.priceSingle || (v.type === 'ELECTRIC_BIKE' ? 20000 : 10000)) / 60))}/phút
+                    {v.pricePerMinutes != null
+                      ? `${new Intl.NumberFormat('vi-VN').format(v.pricePerMinutes)} đ/phút`
+                      : <span style={{ color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>Chưa có giá</span>}
                   </td>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <span style={{
