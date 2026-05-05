@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User, Scan } from 'lucide-react';
 import { ScannerModal } from './ScannerModal';
 import { authService, type UserInfo } from '../services/auth';
+import { api } from '../services/api';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -22,32 +23,12 @@ const Header: React.FC = () => {
       }
     };
 
-    const checkBalance = () => {
-      try {
-        const storedUser = localStorage.getItem('user');
-        const userObj = storedUser ? JSON.parse(storedUser) : null;
-        if (!userObj) {
-          setBalance(userObj?.balance);
-          return;
-        }
-        
-        
-
-        const userId = userObj.id || 'u1';
-
-      // Auto-migrate if they have legacy balance stuck in 'vngo' keys
-      const legacyBalance = localStorage.getItem(`vngo_wallet_balance_${userId}`) || localStorage.getItem('vngo_wallet_balance_undefined');
-      if (legacyBalance) {
-        localStorage.setItem(`ridehub_wallet_balance_${userId}`, legacyBalance);
-        localStorage.removeItem(`vngo_wallet_balance_${userId}`);
-        localStorage.removeItem('vngo_wallet_balance_undefined');
-      }
-
-        const storedBalance = localStorage.getItem(`ridehub_wallet_balance_${userId}`);
-        setBalance(storedBalance ? parseInt(storedBalance, 10) : 0);
-      } catch (e) {
-        console.error("Error parsing balance from localStorage", e);
-        setBalance(0);
+    const checkBalance = async () => {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const userObj = JSON.parse(storedUser);
+        const apiBalance = await api.getUserBalance(userObj.id);
+        setBalance(apiBalance);
       }
     };
 

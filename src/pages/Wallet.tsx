@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styles from './Wallet.module.css';
+import { api } from '../services/api';
 
 const Wallet: React.FC = () => {
   const getUserAndId = () => {
@@ -8,11 +9,7 @@ const Wallet: React.FC = () => {
     return user ? user.id || 'u1' : 'u1';
   };
 
-  const [balance, setBalance] = useState<number>(() => {
-    const userId = getUserAndId();
-    const savedBalance = localStorage.getItem(`ridehub_wallet_balance_${userId}`);
-    return savedBalance ? parseInt(savedBalance, 10) : 0;
-  });
+  const [balance, setBalance] = useState<number>(0);
   const [debt, setDebt] = useState<number>(() => {
     const userId = getUserAndId();
     const savedDebt = localStorage.getItem(`ridehub_wallet_debt_${userId}`);
@@ -22,8 +19,15 @@ const Wallet: React.FC = () => {
   const [showQR, setShowQR] = useState(false);
   
   useEffect(() => {
-    // Only required if depending on specific mounting behavior, 
-    // but initialized correctly.
+    const fetchBalance = async () => {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        const apiBalance = await api.getUserBalance(user.id);
+        setBalance(apiBalance);
+      }
+    };
+    fetchBalance();
   }, []);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -81,6 +81,11 @@ export const api = {
     await apiClient.put(`/user`, profileData);
   },
 
+  getUserBalance: async (id: string): Promise<number> => {
+    const { data } = await apiClient.get<number>(`/user/balance/${id}`);
+    return data;
+  },
+
   // Trips & Booking
   getUserTrips: async (userId: string): Promise<Trip[]> => {
     try {
