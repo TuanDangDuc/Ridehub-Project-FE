@@ -27,15 +27,11 @@ const Header: React.FC = () => {
         const storedUser = localStorage.getItem('user');
         const userObj = storedUser ? JSON.parse(storedUser) : null;
         if (!userObj) {
-          setBalance(0);
+          setBalance(userObj?.balance);
           return;
         }
         
-        // Ưu tiên lấy balance trực tiếp từ object user nếu có
-        if (typeof userObj.balance === 'number') {
-          setBalance(userObj.balance);
-          return;
-        }
+        
 
         const userId = userObj.id || 'u1';
 
