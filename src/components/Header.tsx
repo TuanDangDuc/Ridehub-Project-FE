@@ -48,10 +48,16 @@ const Header: React.FC = () => {
     });
     window.addEventListener('wallet-updated', checkBalance);
 
+    // Cập nhật tiền thường xuyên (mỗi 5 giây)
+    const intervalId = setInterval(() => {
+      checkBalance();
+    }, 5000);
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('user-auth-change', checkUser);
       window.removeEventListener('wallet-updated', checkBalance);
+      clearInterval(intervalId);
     };
   }, []);
 

@@ -28,6 +28,12 @@ const Wallet: React.FC = () => {
       }
     };
     fetchBalance();
+
+    const intervalId = setInterval(() => {
+      fetchBalance();
+    }, 5000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {

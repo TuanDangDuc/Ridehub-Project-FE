@@ -86,6 +86,10 @@ export const api = {
     return data;
   },
 
+  minusUserBalance: async (id: string, amount: number): Promise<void> => {
+    await apiClient.patch(`/user/${id}/minusBalance/${amount}`);
+  },
+
   // Trips & Booking
   getUserTrips: async (userId: string): Promise<Trip[]> => {
     try {

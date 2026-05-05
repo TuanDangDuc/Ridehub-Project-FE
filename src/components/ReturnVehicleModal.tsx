@@ -25,9 +25,15 @@ export const ReturnVehicleModal: React.FC<ReturnVehicleModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [currentCost, setCurrentCost] = useState(0);
+  const [currentBalance, setCurrentBalance] = useState<number>(0);
 
   useEffect(() => {
     if (isOpen && trip && vehicle) {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        api.getUserBalance(user.id).then(setCurrentBalance).catch(console.error);
+      }
       // Calculate active cost initially
       const updateCost = () => {
         const start = new Date(trip.startTime).getTime();
@@ -56,6 +62,14 @@ export const ReturnVehicleModal: React.FC<ReturnVehicleModalProps> = ({
     
     try {
       await api.returnVehicle(trip.id, selectedStationId);
+      
+      const userStr = localStorage.getItem('user');
+      const currentUser = userStr ? JSON.parse(userStr) : null;
+      if (currentUser && currentUser.id && currentCost > 0) {
+        await api.minusUserBalance(currentUser.id, currentCost);
+        window.dispatchEvent(new Event('wallet-updated'));
+      }
+      
       window.dispatchEvent(new Event('trip-updated'));
       onClose();
     } catch (err: any) {
@@ -65,9 +79,6 @@ export const ReturnVehicleModal: React.FC<ReturnVehicleModalProps> = ({
     }
   };
 
-  const currentUserStr = localStorage.getItem('user');
-  const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
-  const currentBalance = currentUser ? parseInt(localStorage.getItem(`ridehub_wallet_balance_${currentUser.id || currentUser.username || 'u1'}`) || '0', 10) : 0;
   const isInsufficient = currentBalance < currentCost;
 
   return (
