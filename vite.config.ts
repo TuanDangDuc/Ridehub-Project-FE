@@ -16,6 +16,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
+      port: 8989,
       hmr: process.env.DISABLE_HMR !== "true",
       proxy: {
         "/api": {

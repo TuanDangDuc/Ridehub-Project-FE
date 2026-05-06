@@ -17,24 +17,43 @@ const Wallet: React.FC = () => {
   });
   const [amountInput, setAmountInput] = useState<string>('');
   const [showQR, setShowQR] = useState(false);
+  const [initialBalance, setInitialBalance] = useState<number | null>(null);
   
   useEffect(() => {
     const fetchBalance = async () => {
       const userStr = localStorage.getItem('user');
       if (userStr) {
         const user = JSON.parse(userStr);
-        const apiBalance = await api.getUserBalance(user.id);
-        setBalance(apiBalance);
+        try {
+          const apiBalance = await api.getUserBalance(user.id);
+          setBalance(apiBalance);
+        } catch (e) {}
       }
     };
     fetchBalance();
 
     const intervalId = setInterval(() => {
       fetchBalance();
-    }, 5000);
+    }, 3000);
 
     return () => clearInterval(intervalId);
   }, []);
+
+  useEffect(() => {
+    if (showQR && initialBalance !== null && balance > initialBalance) {
+      alert("Nạp tiền thành công! Đã cập nhật số dư mới.");
+      setShowQR(false);
+      setAmountInput('');
+      window.dispatchEvent(new Event('wallet-updated'));
+      window.dispatchEvent(new Event('user-auth-change'));
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const userObj = JSON.parse(userStr);
+        userObj.balance = balance;
+        localStorage.setItem('user', JSON.stringify(userObj));
+      }
+    }
+  }, [balance, showQR, initialBalance]);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Only allow numbers
@@ -52,48 +71,20 @@ const Wallet: React.FC = () => {
       alert("Số tiền nạp tối thiểu là 10.000 đ");
       return;
     }
-    setShowQR(true);
-  };
-
-  const handleConfirmPayment = () => {
-    const amountNum = parseInt(amountInput, 10);
-    let remainingAmount = amountNum;
-    let currentDebt = debt;
-
+    
     const userStr = localStorage.getItem('user');
     const user = userStr ? JSON.parse(userStr) : null;
-    if (!user) return;
-
-    const userId = user.id || 'u1';
-
-    if (currentDebt > 0) {
-      if (remainingAmount >= currentDebt) {
-        remainingAmount -= currentDebt;
-        currentDebt = 0;
-      } else {
-        currentDebt -= remainingAmount;
-        remainingAmount = 0;
-      }
-      setDebt(currentDebt);
-      localStorage.setItem(`ridehub_wallet_debt_${userId}`, currentDebt.toString());
+    const userId = user?.id || '';
+    if (!userId) {
+      alert("Vui lòng đăng nhập lại!");
+      return;
     }
 
-    const newBalance = balance + remainingAmount;
-    setBalance(newBalance);
-    localStorage.setItem(`ridehub_wallet_balance_${userId}`, newBalance.toString());
-
-    // Sync with user object if exists
-    if (userStr) {
-      const userObj = JSON.parse(userStr);
-      userObj.balance = newBalance;
-      localStorage.setItem('user', JSON.stringify(userObj));
-    }
-
-    setShowQR(false);
-    setAmountInput('');
-    window.dispatchEvent(new Event('wallet-updated'));
-    window.dispatchEvent(new Event('user-auth-change'));
-    alert("Nạp tiền thành công!");
+    setInitialBalance(balance); // Lưu số dư hiện tại
+    const redirectUrl = `https://api.anhchuno.id.vn/api/payment/checkout-redirect?amount=${amountNum}&userId=${userId}`;
+    window.open(redirectUrl, '_blank');
+    
+    setShowQR(true); // Tận dụng state này để hiển thị "Đang chờ thanh toán" thay vì QR
   };
 
   const formatCurrency = (amount: number) => {
@@ -189,22 +180,21 @@ const Wallet: React.FC = () => {
         </div>
       </div>
 
-      {/* QR Code Modal Overlay */}
+      {/* Polling Modal Overlay */}
       {showQR && (
         <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <h3 className={styles.modalTitle}>Quét mã QR để thanh toán</h3>
-            <img 
-              src={`https://img.vietqr.io/image/mb-0822262802222-print.png?amount=${amountInput}&accountName=NGUYEN%20MANH%20TUONG`} 
-              alt="Mã QR thanh toán MB Bank" 
-              className={styles.qrImage} 
-            />
-            <p style={{ marginBottom: '1.5rem', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-              Vui lòng quét mã trên ứng dụng ngân hàng để nạp <strong>{formatCurrency(parseInt(amountInput, 10))}</strong> vào tài khoản Ridehub của bạn.
+          <div className={styles.modalContent} style={{ textAlign: 'center', padding: '30px' }}>
+            <h3 className={styles.modalTitle}>Đang chờ thanh toán</h3>
+            <div style={{ margin: '20px 0' }}>
+              <div className="spinner-border text-primary" role="status" style={{ width: '3rem', height: '3rem' }}>
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <p style={{ marginBottom: '1.5rem', color: 'var(--color-text-secondary)' }}>
+              Vui lòng hoàn tất thanh toán trên cửa sổ SePay vừa mở. Hệ thống đang liên tục kiểm tra trạng thái giao dịch...
             </p>
-            <div className={styles.btnGroup}>
-              <button className={styles.cancelBtn} onClick={() => setShowQR(false)}>Hủy</button>
-              <button className={styles.confirmBtn} onClick={handleConfirmPayment}>Đã thanh toán</button>
+            <div className={styles.btnGroup} style={{ justifyContent: 'center' }}>
+              <button className={styles.cancelBtn} onClick={() => setShowQR(false)}>Đóng</button>
             </div>
           </div>
         </div>

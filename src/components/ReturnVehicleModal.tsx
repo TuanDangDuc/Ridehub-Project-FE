@@ -65,8 +65,7 @@ export const ReturnVehicleModal: React.FC<ReturnVehicleModalProps> = ({
       
       const userStr = localStorage.getItem('user');
       const currentUser = userStr ? JSON.parse(userStr) : null;
-      if (currentUser && currentUser.id && currentCost > 0) {
-        await api.minusUserBalance(currentUser.id, currentCost);
+      if (currentUser && currentUser.id) {
         window.dispatchEvent(new Event('wallet-updated'));
       }
       
