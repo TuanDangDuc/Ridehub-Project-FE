@@ -91,10 +91,6 @@ const Login: React.FC = () => {
             <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" width="20" />
             Google
           </button>
-          <button type="button" className={styles.socialBtn} onClick={() => window.location.href = authService.GITHUB_AUTH_URL}>
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="Github" width="20" />
-            Github
-          </button>
         </div>
 
         <p className={styles.switchAuth}>
