@@ -10,7 +10,7 @@ const Wallet: React.FC = () => {
   };
 
   const [balance, setBalance] = useState<number>(0);
-  const [debt, setDebt] = useState<number>(() => {
+  const [debt] = useState<number>(() => {
     const userId = getUserAndId();
     const savedDebt = localStorage.getItem(`ridehub_wallet_debt_${userId}`);
     return savedDebt ? parseInt(savedDebt, 10) : 0;
